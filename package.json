@@ -1,0 +1,29 @@
+{
+  "name": "p3-node-template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "npx standard"
+    ]
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.7",
+    "standard": "^14.3.4"
+  }
+}
