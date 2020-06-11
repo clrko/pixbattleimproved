@@ -1,9 +1,11 @@
 const bcrypt = require('bcrypt')
 const express = require('express')
+const jwt = require('jsonwebtoken')
 
 const connection = require('../helper/db.js')
 
 const Router = express.Router()
+const { jwtSecret } = require('../../config.js')
 
 Router.get('/register', (req, res) => {
   res.send('I am on GET /pixBattle/register')
@@ -28,9 +30,17 @@ Router.post('/register', (req, res) => {
             req.body.email,
             hash
           ]
-          connection.query(sql, values, (err, results) => {
+          connection.query(sql, values, (err, result) => {
             if (err) throw err
-            res.status(200).send(results)
+            if (result) {
+              const tokenUserInfo = {
+                email: req.body.email
+              }
+              const token = jwt.sign(tokenUserInfo, jwtSecret)
+              res.header('Access-Control-Expose-Headers', 'x-access-token')
+              res.set('x-access-token', token)
+              return res.status(200).send(tokenUserInfo)
+            }
           })
         })
       })
@@ -47,9 +57,17 @@ Router.post('/register', (req, res) => {
             hash,
             req.body.email
           ]
-          connection.query(sql, values, (err, results) => {
+          connection.query(sql, values, (err, result) => {
             if (err) throw err
-            res.status(200).send(results)
+            if (result) {
+              const tokenUserInfo = {
+                email: req.body.email
+              }
+              const token = jwt.sign(tokenUserInfo, jwtSecret)
+              res.header('Access-Control-Expose-Headers', 'x-access-token')
+              res.set('x-access-token', token)
+              return res.status(200).send(tokenUserInfo)
+            }
           })
         })
       })
