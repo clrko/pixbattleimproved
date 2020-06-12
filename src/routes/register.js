@@ -7,11 +7,11 @@ const connection = require('../helper/db.js')
 const Router = express.Router()
 const { jwtSecret } = require('../../config.js')
 
-Router.get('/register', (req, res) => {
+Router.get('/', (req, res) => {
   res.send('I am on GET /pixBattle/register')
 })
 
-Router.post('/register', (req, res) => {
+Router.post('/', (req, res) => {
   const sql = 'SELECT username, email FROM user WHERE email = ?'
   const username = req.body.username
   const email = req.body.email
