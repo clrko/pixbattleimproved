@@ -17,7 +17,6 @@ router.get('/', (req, res) => {
     if (result.length === 0) {
       return res.status(401).send('The password or username is wrong')
     }
-    console.log(result)
     const myPlaintextPassword = req.body.password
     const userId = result[0].user_id
     const username = result[0].username
