@@ -93,7 +93,6 @@ Router.post('/', (req, res) => {
       })
     } else {
       res.send('Tu es déjà inscrit')
-      console.log(result)
     }
   })
 })
