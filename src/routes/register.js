@@ -33,13 +33,23 @@ Router.post('/', (req, res) => {
           connection.query(sql, values, (err, result) => {
             if (err) throw err
             if (result) {
-              const tokenUserInfo = {
-                email: req.body.email
-              }
-              const token = jwt.sign(tokenUserInfo, jwtSecret)
-              res.header('Access-Control-Expose-Headers', 'x-access-token')
-              res.set('x-access-token', token)
-              return res.status(200).send(tokenUserInfo)
+              const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+              const values = [
+                req.body.email
+              ]
+              connection.query(sql, values, (err, result) => {
+                if (err) throw err
+                if (result) {
+                  const tokenUserInfo = {
+                    userId: result[0].user_id,
+                    username: result[0].username
+                  }
+                  const token = jwt.sign(tokenUserInfo, jwtSecret)
+                  res.header('Access-Control-Expose-Headers', 'x-access-token')
+                  res.set('x-access-token', token)
+                  return res.status(200).send(tokenUserInfo)
+                }
+              })
             }
           })
         })
@@ -60,19 +70,30 @@ Router.post('/', (req, res) => {
           connection.query(sql, values, (err, result) => {
             if (err) throw err
             if (result) {
-              const tokenUserInfo = {
-                email: req.body.email
-              }
-              const token = jwt.sign(tokenUserInfo, jwtSecret)
-              res.header('Access-Control-Expose-Headers', 'x-access-token')
-              res.set('x-access-token', token)
-              return res.status(200).send(tokenUserInfo)
+              const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+              const values = [
+                req.body.email
+              ]
+              connection.query(sql, values, (err, result) => {
+                if (err) throw err
+                if (result) {
+                  const tokenUserInfo = {
+                    userId: result[0].user_id,
+                    username: result[0].username
+                  }
+                  const token = jwt.sign(tokenUserInfo, jwtSecret)
+                  res.header('Access-Control-Expose-Headers', 'x-access-token')
+                  res.set('x-access-token', token)
+                  return res.status(200).send(tokenUserInfo)
+                }
+              })
             }
           })
         })
       })
     } else {
       res.send('Tu es déjà inscrit')
+      console.log(result)
     }
   })
 })
