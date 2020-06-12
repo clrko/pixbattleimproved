@@ -9,8 +9,8 @@ const app = express()
 
 app.use(morgan('dev'))
 app.use(cors())
-app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', routes.Auth)
 app.use('/register', routes.Register)
