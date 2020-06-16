@@ -24,19 +24,19 @@ router.post('/', (req, res) => {
         bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
           if (err) throw err
           const sql = 'INSERT INTO user(username, email, password, create_date) VALUES(?, ?, ?, NOW())'
-          const values = [
+          const insertValues = [
             req.body.username,
             req.body.email,
             hash
           ]
-          connection.query(sql, values, (err, result) => {
+          connection.query(sql, insertValues, (err, result) => {
             if (err) throw err
             if (result) {
               const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-              const values = [
+              const selectValues = [
                 req.body.email
               ]
-              connection.query(sql, values, (err, result) => {
+              connection.query(sql, selectValues, (err, result) => {
                 if (err) throw err
                 if (result) {
                   const tokenUserInfo = {
@@ -61,19 +61,19 @@ router.post('/', (req, res) => {
         bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
           if (err) throw err
           const sql = 'UPDATE user SET username = ?, password = ? WHERE email = ?'
-          const values = [
+          const updateValues = [
             req.body.username,
             hash,
             req.body.email
           ]
-          connection.query(sql, values, (err, result) => {
+          connection.query(sql, updateValues, (err, result) => {
             if (err) throw err
             if (result) {
               const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-              const values = [
+              const selectValues = [
                 req.body.email
               ]
-              connection.query(sql, values, (err, result) => {
+              connection.query(sql, selectValues, (err, result) => {
                 if (err) throw err
                 if (result) {
                   const tokenUserInfo = {
