@@ -4,14 +4,14 @@ const jwt = require('jsonwebtoken')
 
 const connection = require('../helper/db.js')
 
-const Router = express.Router()
+const router = express.Router()
 const { jwtSecret } = require('../../config.js')
 
-Router.get('/', (req, res) => {
+router.get('/', (req, res) => {
   res.send('I am on GET /pixBattle/register')
 })
 
-Router.post('/', (req, res) => {
+router.post('/', (req, res) => {
   const sql = 'SELECT username, email FROM user WHERE email = ?'
   const username = req.body.username
   const email = req.body.email
@@ -97,4 +97,4 @@ Router.post('/', (req, res) => {
   })
 })
 
-module.exports = Router
+module.exports = router
