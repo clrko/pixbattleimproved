@@ -13,9 +13,8 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const sql = 'SELECT username, email FROM user WHERE email = ?'
-  const username = req.body.username
   const email = req.body.email
-  connection.query(sql, [email, username], (err, result) => {
+  connection.query(sql, [email], (err, result) => {
     if (err) throw err
     if (!result[0]) {
       const saltRounds = 10
