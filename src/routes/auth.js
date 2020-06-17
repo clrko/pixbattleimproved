@@ -7,7 +7,7 @@ const { jwtSecret } = require('../../config')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
+router.post('/', (req, res) => {
   const sql = 'SELECT u.user_id, u.username, u.email, u.password, a.avatar_url FROM user AS u JOIN avatar AS a ON u.avatar_id = a.avatar_id WHERE email = ?'
   const values = [
     req.body.email
@@ -18,9 +18,7 @@ router.get('/', (req, res) => {
       return res.status(401).send('The password or username is wrong')
     }
     const myPlaintextPassword = req.body.password
-    const userId = result[0].user_id
-    const username = result[0].username
-    const avatar = result[0].avatar_url
+    const { user_id: userId, username, avatar_url: avatar } = result[0]
 
     bcrypt.compare(myPlaintextPassword, result[0].password, (err, result) => {
       if (err) throw err
