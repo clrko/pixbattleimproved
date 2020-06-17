@@ -16,10 +16,11 @@ router.post('/', (req, res) => {
   const email = req.body.email
   connection.query(sql, [email], (err, result) => {
     if (err) throw err
+    // Utilisateur non inscrit et non invité
     if (!result[0]) {
       const saltRounds = 10
       const myPlaintextPassword = req.body.password
-      bcrypt.genSalt(saltRounds, (err, salt) => {
+      return bcrypt.genSalt(saltRounds, (err, salt) => {
         if (err) throw err
         bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
           if (err) throw err
@@ -53,45 +54,48 @@ router.post('/', (req, res) => {
           })
         })
       })
-    } else if (result[0].email && !result[0].username) {
-      const saltRounds = 10
-      const myPlaintextPassword = req.body.password
-      bcrypt.genSalt(saltRounds, (err, salt) => {
+    }
+    // Utilisateur inscrit
+    if (result[0].email && result[0].username) {
+      return res.send('Tu es déjà inscrit')
+    }
+    // Utilisateur invité mais pas encore inscrit
+    const saltRounds = 10
+    const myPlaintextPassword = req.body.password
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+      if (err) throw err
+      bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
         if (err) throw err
-        bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
+        const sql = 'UPDATE user SET username = ?, password = ? WHERE email = ?'
+        const updateValues = [
+          req.body.username,
+          hash,
+          req.body.email
+        ]
+        connection.query(sql, updateValues, (err, result) => {
           if (err) throw err
-          const sql = 'UPDATE user SET username = ?, password = ? WHERE email = ?'
-          const updateValues = [
-            req.body.username,
-            hash,
-            req.body.email
-          ]
-          connection.query(sql, updateValues, (err, result) => {
-            if (err) throw err
-            if (result) {
-              const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-              const selectValues = [
-                req.body.email
-              ]
-              connection.query(sql, selectValues, (err, result) => {
-                if (err) throw err
-                if (result) {
-                  const tokenUserInfo = {
-                    userId: result[0].user_id,
-                    username: result[0].username
-                  }
-                  const token = jwt.sign(tokenUserInfo, jwtSecret)
-                  res.header('Access-Control-Expose-Headers', 'x-access-token')
-                  res.set('x-access-token', token)
-                  return res.status(200).send(tokenUserInfo)
+          if (result) {
+            const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+            const selectValues = [
+              req.body.email
+            ]
+            connection.query(sql, selectValues, (err, result) => {
+              if (err) throw err
+              if (result) {
+                const tokenUserInfo = {
+                  userId: result[0].user_id,
+                  username: result[0].username
                 }
-              })
-            }
-          })
+                const token = jwt.sign(tokenUserInfo, jwtSecret)
+                res.header('Access-Control-Expose-Headers', 'x-access-token')
+                res.set('x-access-token', token)
+                return res.status(200).send(tokenUserInfo)
+              }
+            })
+          }
         })
       })
-    }
-    return res.send('Tu es déjà inscrit')
+    })
   })
 })
 
