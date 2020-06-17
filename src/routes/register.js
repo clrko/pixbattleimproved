@@ -27,7 +27,7 @@ router.post('/', (req, res) => {
           const sql = 'INSERT INTO user(username, email, password, create_date) VALUES(?, ?, ?, NOW())'
           const insertValues = [
             req.body.username,
-            req.body.email,
+            email,
             hash
           ]
           connection.query(sql, insertValues, (err, result) => {
@@ -35,7 +35,7 @@ router.post('/', (req, res) => {
             if (result) {
               const sql = 'SELECT user_id, username FROM user WHERE email = ?'
               const selectValues = [
-                req.body.email
+                email
               ]
               connection.query(sql, selectValues, (err, result) => {
                 if (err) throw err
@@ -77,7 +77,7 @@ router.post('/', (req, res) => {
           if (result) {
             const sql = 'SELECT user_id, username FROM user WHERE email = ?'
             const selectValues = [
-              req.body.email
+              email
             ]
             connection.query(sql, selectValues, (err, result) => {
               if (err) throw err
