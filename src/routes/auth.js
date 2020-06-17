@@ -18,9 +18,7 @@ router.post('/', (req, res) => {
       return res.status(401).send('The password or username is wrong')
     }
     const myPlaintextPassword = req.body.password
-    const userId = result[0].user_id
-    const username = result[0].username
-    const avatar = result[0].avatar_url
+    const { user_id: userId, username, avatar_url: avatar } = result[0]
 
     bcrypt.compare(myPlaintextPassword, result[0].password, (err, result) => {
       if (err) throw err
