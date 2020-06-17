@@ -7,7 +7,7 @@ const { jwtSecret } = require('../../config')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
+router.post('/', (req, res) => {
   const sql = 'SELECT u.user_id, u.username, u.email, u.password, a.avatar_url FROM user AS u JOIN avatar AS a ON u.avatar_id = a.avatar_id WHERE email = ?'
   const values = [
     req.body.email
