@@ -90,9 +90,8 @@ router.post('/', (req, res) => {
           })
         })
       })
-    } else {
-      res.send('Tu es déjà inscrit')
     }
+    return res.send('Tu es déjà inscrit')
   })
 })
 
