@@ -4,80 +4,82 @@ const jwt = require('jsonwebtoken')
 const connection = require('../helper/db.js')
 const { jwtSecret } = require('../../config.js')
 
-const Router = express.Router()
+const router = express.Router()
 
-Router.post('/', (req, res) => {
-  const token = req.headers['x-access-token']
+router.post('/:groupId', (req, res) => {
+  const token = req.body.headers['x-access-token']
   jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) throw err
-    const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-    const values = [
-      req.body.email,
-      decoded.groupId
-    ]
-    connection.query(sql, values, (err, result) => {
-      if (err) throw err
-      if (!result[0]) {
-        const sql = 'INSERT INTO user (email, create_date) VALUES (?, NOW())'
-        const values = [
-          req.body.email
-        ]
-        connection.query(sql, values, (err, result) => {
-          if (err) throw err
-          if (result) {
-            const sql = 'SELECT user_id FROM user WHERE email = ?'
-            const values = [
-              req.body.email
-            ]
-            connection.query(sql, values, (err, result) => {
-              if (err) throw err
-              if (result) {
-                const sql = 'INSERT INTO user_group VALUES (? , ?)'
-                const values = [
-                  result[0].user_id,
-                  decoded.groupId
-                ]
-                connection.query(sql, values, (err, result) => {
-                  if (err) throw err
-                  return res.status(200).send(result)
-                })
-              }
-            })
-          }
-        })
-      } else {
-        const sql = 'INSERT INTO user_group VALUES (? , ?)'
-        const values = [
-          result[0].user_id,
-          decoded.groupId
-        ]
-        connection.query(sql, values, (err, result) => {
-          if (err) throw err
-          return res.status(200).send(result)
-        })
-      }
+    const emails = req.body.allEmails
+    emails.map(email => {
+      const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+      const selectUserValues = [
+        email
+      ]
+      connection.query(sql, selectUserValues, (err, result) => {
+        if (err) throw err
+        if (!result[0]) {
+          const sql = 'INSERT INTO user (email, create_date) VALUES (?, NOW())'
+          const insertUserValues = [
+            email
+          ]
+          connection.query(sql, insertUserValues, (err, result) => {
+            if (err) throw err
+            if (result) {
+              const sql = 'SELECT user_id FROM user WHERE email = ?'
+              const selectUserGroupValues = [
+                email
+              ]
+              connection.query(sql, selectUserGroupValues, (err, result) => {
+                if (err) throw err
+                if (result) {
+                  const sql = 'INSERT INTO user_group VALUES (? , ?)'
+                  const insertUserGroupValues = [
+                    result[0].user_id,
+                    req.params.groupId
+                  ]
+                  connection.query(sql, insertUserGroupValues, (err, result) => {
+                    if (err) throw err
+                    return res.status(200).send('youhou')
+                  })
+                }
+              })
+            }
+          })
+        } else {
+          const sql = 'INSERT INTO user_group VALUES (? , ?)'
+          const values = [
+            result[0].user_id,
+            req.params.groupId
+          ]
+          connection.query(sql, values, (err, result) => {
+            if (err) throw err
+            return res.status(200).send(result)
+          })
+        }
+      })
     })
   })
 })
 
-Router.put('/', (req, res) => {
-  const token = req.headers['x-access-token']
+router.put('/:groupId', (req, res) => {
+  const token = req.body.headers['x-access-token']
   jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) throw err
     const sql = 'INSERT INTO user_group VALUES (?, ?)'
-    const values = [
-      decoded.adminId,
-      decoded.groupId
+    const insertValues = [
+      decoded.userId,
+      req.params.groupId
     ]
-    connection.query(sql, values, (err, result) => {
+    connection.query(sql, insertValues, (err, result) => {
       if (err) throw err
       if (result) {
         const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?'
-        const values = [
+        const updateValues = [
           req.body.group_name,
-          decoded.groupId
+          req.params.groupId
         ]
-        connection.query(sql, values, (err, result) => {
+        connection.query(sql, updateValues, (err, result) => {
           if (err) throw err
           if (result) {
             res.status(200).send('youhou')
@@ -88,4 +90,4 @@ Router.put('/', (req, res) => {
   })
 })
 
-module.exports = Router
+module.exports = router
