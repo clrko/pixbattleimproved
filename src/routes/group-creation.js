@@ -6,10 +6,7 @@ const { jwtSecret } = require('../../config.js')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
-  res.send('I am on GET /group-creation')
-})
-
+// Quand l'utilisateur clique sur le bouton 'Créer un groupe' sur la page profil
 router.post('/', (req, res) => {
   const token = req.body.headers['x-access-token']
   jwt.verify(token, jwtSecret, (err, decoded) => {
