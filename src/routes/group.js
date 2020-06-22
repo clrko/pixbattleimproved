@@ -77,21 +77,15 @@ router.put('/:groupId', checkToken, (req, res) => {
   })
 })
 
-// router.delete('/:groupId', (req, res) => {
-//   const token = req.body.headers['x-access-token']
-//   jwt.verify(token, jwtSecret, (err, decoded) => {
-//     if (err) throw err
-//     const sql = 'DELETE FROM `group` WHERE group_id = ?'
-//     const values = [
-//       req.params.groupId
-//     ]
-//     connection.query(sql, values, (err, result) => {
-//       if (err) throw err
-//       if (result) {
-//         console.log(sql, values, result)
-//       }
-//     })
-//   })
-// })
+router.delete('/:groupId', checkToken, (req, res) => {
+  const sql = 'DELETE FROM `group` WHERE group_id = ?'
+  const values = [
+    req.params.groupId
+  ]
+  connection.query(sql, values, err => {
+    if (err) throw err
+    return res.sendStatus(200)
+  })
+})
 
 module.exports = router
