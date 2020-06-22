@@ -13,6 +13,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', routes.Auth)
+app.use('/group-creation', routes.GroupCreation)
+app.use('/group', routes.Group)
 app.use('/register', routes.Register)
 
 app.listen(port, () => {

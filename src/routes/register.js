@@ -2,14 +2,10 @@ const bcrypt = require('bcrypt')
 const express = require('express')
 const jwt = require('jsonwebtoken')
 
-const connection = require('../helper/db.js')
+const connection = require('../helper/db')
+const { jwtSecret } = require('../../config')
 
 const router = express.Router()
-const { jwtSecret } = require('../../config.js')
-
-router.get('/', (req, res) => {
-  res.send('I am on GET /pixBattle/register')
-})
 
 router.post('/', (req, res) => {
   const sql = 'SELECT username, email FROM user WHERE email = ?'
@@ -30,27 +26,23 @@ router.post('/', (req, res) => {
             email,
             hash
           ]
-          connection.query(sql, insertValues, (err, result) => {
+          connection.query(sql, insertValues, err => {
             if (err) throw err
-            if (result) {
-              const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-              const selectValues = [
-                email
-              ]
-              connection.query(sql, selectValues, (err, result) => {
-                if (err) throw err
-                if (result) {
-                  const tokenUserInfo = {
-                    userId: result[0].user_id,
-                    username: result[0].username
-                  }
-                  const token = jwt.sign(tokenUserInfo, jwtSecret)
-                  res.header('Access-Control-Expose-Headers', 'x-access-token')
-                  res.set('x-access-token', token)
-                  return res.status(200).send(tokenUserInfo)
-                }
-              })
-            }
+            const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+            const selectValues = [
+              email
+            ]
+            connection.query(sql, selectValues, (err, result) => {
+              if (err) throw err
+              const tokenUserInfo = {
+                userId: result[0].user_id,
+                username: result[0].username
+              }
+              const token = jwt.sign(tokenUserInfo, jwtSecret)
+              res.header('Access-Control-Expose-Headers', 'x-access-token')
+              res.set('x-access-token', token)
+              return res.status(200).send(tokenUserInfo)
+            })
           })
         })
       })
@@ -72,27 +64,23 @@ router.post('/', (req, res) => {
           hash,
           req.body.email
         ]
-        connection.query(sql, updateValues, (err, result) => {
+        connection.query(sql, updateValues, err => {
           if (err) throw err
-          if (result) {
-            const sql = 'SELECT user_id, username FROM user WHERE email = ?'
-            const selectValues = [
-              email
-            ]
-            connection.query(sql, selectValues, (err, result) => {
-              if (err) throw err
-              if (result) {
-                const tokenUserInfo = {
-                  userId: result[0].user_id,
-                  username: result[0].username
-                }
-                const token = jwt.sign(tokenUserInfo, jwtSecret)
-                res.header('Access-Control-Expose-Headers', 'x-access-token')
-                res.set('x-access-token', token)
-                return res.status(200).send(tokenUserInfo)
-              }
-            })
-          }
+          const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+          const selectValues = [
+            email
+          ]
+          connection.query(sql, selectValues, (err, result) => {
+            if (err) throw err
+            const tokenUserInfo = {
+              userId: result[0].user_id,
+              username: result[0].username
+            }
+            const token = jwt.sign(tokenUserInfo, jwtSecret)
+            res.header('Access-Control-Expose-Headers', 'x-access-token')
+            res.set('x-access-token', token)
+            return res.status(200).send(tokenUserInfo)
+          })
         })
       })
     })
