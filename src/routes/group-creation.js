@@ -1,6 +1,6 @@
 const express = require('express')
 
-const checkToken = require('../helper/ckeckToken')
+const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 
 const router = express.Router()
