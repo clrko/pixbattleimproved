@@ -1,7 +1,7 @@
 const express = require('express')
 
 const checkToken = require('../helper/ckeckToken')
-const connection = require('../helper/db.js')
+const connection = require('../helper/db')
 
 const router = express.Router()
 
@@ -36,7 +36,7 @@ router.post('/:groupId', checkToken, (req, res) => {
     // if (!result[0]) {
     const sql = 'INSERT INTO user (email) VALUES ?'
     const insertUserValues = nonExistingEmails.map(e => [e])
-    connection.query(sql, [insertUserValues], (err, result) => {
+    connection.query(sql, [insertUserValues], err => {
       if (err) throw err
       const sql = `SELECT user_id FROM user WHERE email IN(${placeholders})`
       connection.query(sql, emails, (err, allUserIds) => {
@@ -45,9 +45,9 @@ router.post('/:groupId', checkToken, (req, res) => {
         // Insertion de l'id des users invités dans user_group
         const sql = 'INSERT INTO user_group (user_id, group_id) VALUES ?'
         const insertUserGroupValues = allUserIds.map(user => [user.user_id, req.params.groupId])
-        connection.query(sql, [insertUserGroupValues], (err, result) => {
+        connection.query(sql, [insertUserGroupValues], err => {
           if (err) throw err
-          return res.status(200).send('youhou1') /* .redirect('/battle-theme') */
+          return res.sendStatus(200)
         })
       })
     })
@@ -62,22 +62,18 @@ router.put('/:groupId', checkToken, (req, res) => {
     req.user.userId,
     req.params.groupId
   ]
-  connection.query(sql, insertValues, (err, result) => {
+  connection.query(sql, insertValues, err => {
     if (err) throw err
     // Mise à jour du groupe avec le nom choisis par l'utilisateur
-    if (result) {
-      const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?'
-      const updateValues = [
-        req.body.groupName,
-        req.params.groupId
-      ]
-      connection.query(sql, updateValues, (err, result) => {
-        if (err) throw err
-        if (result) {
-          res.status(200).send('youhou2')
-        }
-      })
-    }
+    const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?'
+    const updateValues = [
+      req.body.groupName,
+      req.params.groupId
+    ]
+    connection.query(sql, updateValues, err => {
+      if (err) throw err
+      res.status(200).send('youhou2')
+    })
   })
 })
 
