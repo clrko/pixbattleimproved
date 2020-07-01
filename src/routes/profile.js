@@ -5,6 +5,7 @@ const connection = require('../helper/db')
 
 const router = express.Router()
 
+// RECUPERER LES VICTOIRES D'UN USER
 router.get('/', (req, res) => {
   const sqlUserInfos = 'SELECT u.username, a.avatar_url, b.winner_user_id, count(b.winner_user_id) AS victories FROM avatar AS a JOIN user AS u ON a.avatar_id = u.avatar_id JOIN battle AS b ON b.winner_user_id = u.user_id JOIN user_battle AS ub ON ub.user_id = u.user_id WHERE u.user_id = ? GROUP BY b.winner_user_id'
   const valueUserId = [req.body.userId]
@@ -22,6 +23,7 @@ router.get('/', (req, res) => {
   })
 })
 
+// RECUPERER LE NOMBRE DE PHOTOS D'UN USER
 router.get('/nbPhotos', (req, res) => {
   const sqlNumberPhotosUser = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?'
   const valueUserId = [req.body.userId]
@@ -31,6 +33,7 @@ router.get('/nbPhotos', (req, res) => {
   })
 })
 
+// RECUPERER LE NOMBRE DE GROUPE D'UN USER
 router.get('/nbGroups', (req, res) => {
   const sqlNumberGroupsUser = 'SELECT count(*) AS nb_groups FROM user_group WHERE user_id = ?'
   const valueUserId = [req.body.userId]
@@ -40,6 +43,7 @@ router.get('/nbGroups', (req, res) => {
   })
 })
 
+// RECUPERER LE NOMBRE DE BATTLES
 router.get('/nbBattles', (req, res) => {
   const sqlNumberBattlesUser = 'SELECT count(*) AS nb_battles FROM user_battle WHERE user_id = 2'
   const valueUserId = [req.body.userId]
