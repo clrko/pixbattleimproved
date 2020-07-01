@@ -22,4 +22,31 @@ router.get('/', (req, res) => {
   })
 })
 
+router.get('/nbPhotos', (req, res) => {
+  const sqlNumberPhotosUser = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?'
+  const valueUserId = [req.body.userId]
+  connection.query(sqlNumberPhotosUser, valueUserId, (err, nbPhotos) => {
+    if (err) throw err
+    res.status(200).send(nbPhotos)
+  })
+})
+
+router.get('/nbGroups', (req, res) => {
+  const sqlNumberGroupsUser = 'SELECT count(*) AS nb_groups FROM user_group WHERE user_id = ?'
+  const valueUserId = [req.body.userId]
+  connection.query(sqlNumberGroupsUser, valueUserId, (err, nbGroups) => {
+    if (err) throw err
+    res.status(200).send(nbGroups)
+  })
+})
+
+router.get('/nbBattles', (req, res) => {
+  const sqlNumberBattlesUser = 'SELECT count(*) AS nb_battles FROM user_battle WHERE user_id = 2'
+  const valueUserId = [req.body.userId]
+  connection.query(sqlNumberBattlesUser, valueUserId, (err, nbBattles) => {
+    if (err) throw err
+    res.status(200).send(nbBattles)
+  })
+})
+
 module.exports = router
