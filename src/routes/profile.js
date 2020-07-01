@@ -10,16 +10,15 @@ router.get('/', (req, res) => {
   const valueUserId = [req.body.userId]
   connection.query(sqlUserInfos, valueUserId, (err, userInfos) => {
     if (err) throw err
-    if (userInfos[0] === undefined) {
+    if (!userInfos[0]) {
       const sqlUserInfosEmpty = 'SELECT u.username, a.avatar_url FROM avatar AS a JOIN user AS u ON a.avatar_id = u.avatar_id WHERE u.user_id = ?'
       connection.query(sqlUserInfosEmpty, valueUserId, (err, userInfos) => {
         if (err) throw err
-        // res.status(200).send(userInfosEmpty)
-        console.log(userInfos)
-        return userInfos
+        return res.status(200).send(userInfos[0])
       })
+    } else {
+      return res.status(200).send(userInfos[0])
     }
-    res.status(200).send(userInfos)
   })
 })
 
