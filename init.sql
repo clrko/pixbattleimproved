@@ -113,7 +113,7 @@ DROP TABLE IF EXISTS `group`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `group` (
   `group_id` int NOT NULL AUTO_INCREMENT,
-  `group_name` varchar(45) NOT NULL,
+  `group_name` varchar(45) NULL,
   `create_date` datetime NOT NULL,
   `admin_user_id` int NOT NULL,
   PRIMARY KEY (`group_id`),
@@ -249,7 +249,7 @@ CREATE TABLE `user` (
   `username` varchar(45) DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(100) DEFAULT NULL,
-  `create_date` datetime NOT NULL,
+  `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
   `avatar_id` int DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email_UNIQUE` (`email`),
