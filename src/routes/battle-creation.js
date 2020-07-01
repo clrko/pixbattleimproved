@@ -20,4 +20,35 @@ router.get('/rules', checkToken, (req, res) => {
   })
 })
 
+router.post('/', /* checkToken, */ (req, res) => {
+  const userId = req.body.userId
+  const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id) VALUES (?, ?, ?, ?)'
+  const value = [
+    req.body.deadline,
+    req.body.groupId,
+    req.body.themeId,
+    userId
+  ]
+  connection.query(sql, value, (err, battleCreationResult) => {
+    if (err) throw err
+    const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
+    const insertBattleRulesValues = req.body.allRules.map(rule => [battleCreationResult.insertId, rule.rule_id])
+    connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
+      if (err) throw err
+      return res.sendStatus(200)
+    })
+    const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
+    const userBattleValues = [
+      userId,
+      battleCreationResult.insertId
+    ]
+    connection.query(sqlUserBattle, userBattleValues, err => {
+      if (err) throw err
+      return res.sendStatus(200)
+    })
+  })
+})
+
+/* ajouter userId - userBattle */
+
 module.exports = router
