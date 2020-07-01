@@ -48,7 +48,7 @@ router.put('/:groupId', checkToken, (req, res) => {
     ]
     connection.query(sql, updateValues, err => {
       if (err) throw err
-      res.status(200).send('youhou2')
+      res.sendStatus(200)
     })
   })
 })
