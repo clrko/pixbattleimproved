@@ -1,6 +1,7 @@
 const cors = require('cors')
 const express = require('express')
 const morgan = require('morgan')
+const multer = require('multer')
 
 const { port } = require('./config')
 const routes = require('./src/routes/index')

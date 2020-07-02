@@ -2,6 +2,8 @@ const express = require('express')
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
+const multer = require('multer')
+const upload = multer({dest: 'uploads/'})
 
 const router = express.Router()
 
