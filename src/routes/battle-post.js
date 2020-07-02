@@ -1,11 +1,23 @@
 const express = require('express')
-
+const router = express.Router()
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
-const upload = multer({dest: 'uploads/'})
 
-const router = express.Router()
+
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './uploads/');
+  },
+  filename: function(req, file, cb) {
+    cb(null, new Date().toISOString() + file.originalname)
+  }
+});
+
+const upload = multer({storage: storage})
+
+
 
 router.get('/', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
@@ -42,7 +54,8 @@ router.get('/', checkToken, (req, res) => {
   })
 })
 
-router.post('/addpicture', (req, res) => {
+router.post('/addpicture', upload.single('file'), (req, res) => {
+  console.log(req.file)
   const sqlInsertPhoto = 'INSERT INTO photo (photo_url, create_date, user_id, battle_id, group_id) VALUES (?, NOW(), ?, ?, ?)'
   const valuesInsertPhoto = [
     req.body.photoUrl,
