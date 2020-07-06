@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
     cb(null, '/Users/ariomega/Desktop/Pix_Battle/paris-react-2003-pjt3-pixbattle-back/uploads');
   },
   filename: function(req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname)
+    cb(null, Date.now() + '-' + file.originalname)
   }
 });
 
@@ -79,7 +79,7 @@ router.post('/addpicture', upload.single('file'), (req, res) => {
   console.log(req.file)
   const sqlInsertPhoto = 'INSERT INTO photo (photo_url, create_date, user_id, battle_id, group_id) VALUES (?, NOW(), ?, ?, ?)'
   const valuesInsertPhoto = [
-    req.body.photoUrl,
+    req.file.filename,
     req.body.userId,
     req.body.battleId,
     req.body.groupId
