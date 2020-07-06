@@ -31,7 +31,7 @@ router.post('/', (req, res) => {
         const token = jwt.sign(tokenUserInfo, jwtSecret)
         res.header('Access-Control-Expose-Headers', 'x-access-token')
         res.set('x-access-token', token)
-        return res.status(200).send(tokenUserInfo)
+        return res.status(201).send(tokenUserInfo)
       } else {
         return res.status(401).send('The password or username is wrong')
       }
