@@ -15,7 +15,21 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({storage: storage})
+const fileFilter = (req, file, cb) => {
+  //reject a file
+  if (file.mimetype === 'image/jpeg' ||  file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(new Error('This type of file is not supported'), null, false);
+  }  
+}
+
+const upload = multer({storage: storage, limits: {
+  fileSize: 1024 * 1024 * 5
+},
+fileFilter: fileFilter
+})
+
 // const upload = multer({
 //   dest: 'uploads/',
 //   onError: function (err, next) {
