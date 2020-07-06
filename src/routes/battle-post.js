@@ -8,7 +8,7 @@ const multer = require('multer')
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, './uploads/');
+    cb(null, '/Users/ariomega/Desktop/Pix_Battle/paris-react-2003-pjt3-pixbattle-back/uploads');
   },
   filename: function(req, file, cb) {
     cb(null, new Date().toISOString() + file.originalname)
@@ -16,6 +16,13 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({storage: storage})
+// const upload = multer({
+//   dest: 'uploads/',
+//   onError: function (err, next) {
+//     console.log('error', err);
+//     next(err);
+//   }
+// })
 
 
 
