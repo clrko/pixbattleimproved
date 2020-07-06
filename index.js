@@ -17,6 +17,7 @@ app.use('/battle-creation', routes.BattleCreation)
 app.use('/group-creation', routes.GroupCreation)
 app.use('/group', routes.Group)
 app.use('/register', routes.Register)
+app.use('/battle-vote', routes.BattleVote)
 
 app.listen(port, () => {
   console.log(`server is listening on port ${port}`)
