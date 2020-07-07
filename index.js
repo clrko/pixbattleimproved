@@ -14,6 +14,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', routes.Auth)
+app.use('/battle-creation', routes.BattleCreation)
 app.use('/group-creation', routes.GroupCreation)
 app.use('/group', routes.Group)
 app.use('/battle-post', routes.BattlePost)
