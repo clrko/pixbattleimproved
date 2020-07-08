@@ -48,7 +48,7 @@ DROP TABLE IF EXISTS `battle`;
 CREATE TABLE `battle` (
   `battle_id` int NOT NULL AUTO_INCREMENT,
   `deadline` datetime DEFAULT NULL,
-  `create_date` datetime NOT NULL,
+  `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
   `group_id` int NOT NULL,
   `theme_id` int NOT NULL,
   `admin_user_id` int NOT NULL,
@@ -141,7 +141,7 @@ DROP TABLE IF EXISTS `photo`;
 CREATE TABLE `photo` (
   `photo_id` int NOT NULL AUTO_INCREMENT,
   `photo_url` varchar(255) NOT NULL,
-  `create_date` datetime NOT NULL,
+  `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
   `score` int DEFAULT NULL,
   `user_id` int NOT NULL,
   `battle_id` int NOT NULL,
