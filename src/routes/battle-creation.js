@@ -29,6 +29,7 @@ router.post('/', /* checkToken, */ (req, res) => {
     req.body.themeId,
     userId
   ]
+  console.log(value)
   connection.query(sql, value, (err, battleCreationResult) => {
     if (err) throw err
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
@@ -37,7 +38,7 @@ router.post('/', /* checkToken, */ (req, res) => {
       if (err) throw err
       return res.sendStatus(201)
     })
-    const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
+    const sqlUserBattle = 'INSERT INTO user_battle VALUES (?, ?)'
     const userBattleValues = [
       userId,
       battleCreationResult.insertId
@@ -48,7 +49,5 @@ router.post('/', /* checkToken, */ (req, res) => {
     })
   })
 })
-
-/* ajouter userId - userBattle */
 
 module.exports = router
