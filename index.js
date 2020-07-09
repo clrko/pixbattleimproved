@@ -14,6 +14,8 @@ app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', routes.Auth)
 app.use('/battle-creation', routes.BattleCreation)
+
+app.use('/gallery', routes.Gallery)
 app.use('/group-creation', routes.GroupCreation)
 app.use('/group', routes.Group)
 app.use('/profile', routes.Profile)
