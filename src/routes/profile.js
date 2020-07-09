@@ -5,7 +5,7 @@ const connection = require('../helper/db')
 
 const router = express.Router()
 
-router.get('/', checkToken, (req, res) => {
+router.post('/', checkToken, (req, res) => {
   const sqlUserInfos = 'SELECT b.winner_user_id, count(b.winner_user_id) AS victories FROM user AS u JOIN battle AS b ON b.winner_user_id = u.user_id JOIN user_battle AS ub ON ub.user_id = u.user_id WHERE u.user_id = ? GROUP BY b.winner_user_id'
   const valueUserId = [req.user.userId]
   connection.query(sqlUserInfos, valueUserId, (err, userInfos) => {
