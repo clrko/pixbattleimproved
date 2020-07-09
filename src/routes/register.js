@@ -59,7 +59,7 @@ router.post('/', (req, res) => {
       if (err) throw err
       bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
         if (err) throw err
-        const sql = 'UPDATE user SET username = ?, password = ? WHERE email = ?'
+        const sql = 'UPDATE user SET username = ?, password = ?, avatar_id = 1 WHERE email = ?'
         const updateValues = [
           req.body.username,
           hash,
