@@ -8,7 +8,7 @@ const { jwtSecret } = require('../../config')
 const router = express.Router()
 
 router.post('/', (req, res) => {
-  const sql = 'SELECT username, email FROM user WHERE email = ?'
+  const sql = 'SELECT user_id, username, email FROM user WHERE email = ?'
   const email = req.body.email
   connection.query(sql, [email], (err, result) => {
     if (err) throw err
@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
         if (err) throw err
         bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
           if (err) throw err
-          const sql = 'INSERT INTO user(username, email, password, create_date) VALUES(?, ?, ?, NOW())'
+          const sql = 'INSERT INTO user(username, email, password, avatar_id, create_date) VALUES(?, ?, ?, 1, NOW())'
           const insertValues = [
             req.body.username,
             email,
@@ -28,7 +28,7 @@ router.post('/', (req, res) => {
           ]
           connection.query(sql, insertValues, err => {
             if (err) throw err
-            const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+            const sql = 'SELECT user_id, username, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
             const selectValues = [
               email
             ]
@@ -36,7 +36,8 @@ router.post('/', (req, res) => {
               if (err) throw err
               const tokenUserInfo = {
                 userId: result[0].user_id,
-                username: result[0].username
+                username: result[0].username,
+                avatar: result[0].avatar_url
               }
               const token = jwt.sign(tokenUserInfo, jwtSecret)
               res.header('Access-Control-Expose-Headers', 'x-access-token')
@@ -58,7 +59,7 @@ router.post('/', (req, res) => {
       if (err) throw err
       bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
         if (err) throw err
-        const sql = 'UPDATE user SET username = ?, password = ? WHERE email = ?'
+        const sql = 'UPDATE user SET username = ?, password = ?, avatar_id = 1 WHERE email = ?'
         const updateValues = [
           req.body.username,
           hash,
@@ -66,7 +67,7 @@ router.post('/', (req, res) => {
         ]
         connection.query(sql, updateValues, err => {
           if (err) throw err
-          const sql = 'SELECT user_id, username FROM user WHERE email = ?'
+          const sql = 'SELECT user_id, username, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
           const selectValues = [
             email
           ]
@@ -74,7 +75,8 @@ router.post('/', (req, res) => {
             if (err) throw err
             const tokenUserInfo = {
               userId: result[0].user_id,
-              username: result[0].username
+              username: result[0].username,
+              avatar: result[0].avatar_url
             }
             const token = jwt.sign(tokenUserInfo, jwtSecret)
             res.header('Access-Control-Expose-Headers', 'x-access-token')

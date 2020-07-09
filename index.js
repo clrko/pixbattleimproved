@@ -18,6 +18,7 @@ app.use('/battle-creation', routes.BattleCreation)
 app.use('/group-creation', routes.GroupCreation)
 app.use('/group', routes.Group)
 app.use('/battle-post', routes.BattlePost)
+app.use('/profile', routes.Profile)
 app.use('/register', routes.Register)
 
 app.listen(port, () => {

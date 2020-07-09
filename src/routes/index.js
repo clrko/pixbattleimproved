@@ -3,6 +3,7 @@ const BattlePost = require('./battle-post')
 const BattleCreation = require('./battle-creation')
 const Group = require('./group')
 const GroupCreation = require('./group-creation')
+const Profile = require('./profile')
 const Register = require('./register')
 
 module.exports = {
@@ -11,5 +12,6 @@ module.exports = {
   BattleCreation,
   Group,
   GroupCreation,
+  Profile,
   Register
 }
