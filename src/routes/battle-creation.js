@@ -31,18 +31,20 @@ router.post('/', checkToken, (req, res) => {
   ]
   connection.query(sql, value, (err, battleCreationResult) => {
     if (err) throw err
+    const createdBattleId = battleCreationResult.insertId
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
-    const insertBattleRulesValues = req.body.rulesId.map(rule => [battleCreationResult.insertId, rule])
+    const insertBattleRulesValues = req.body.rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
       if (err) throw err
       const sqlUserBattle = 'INSERT INTO user_battle VALUES (?, ?)'
       const userBattleValues = [
         userId,
-        battleCreationResult.insertId
+        createdBattleId
       ]
       connection.query(sqlUserBattle, userBattleValues, err => {
         if (err) throw err
         return res.sendStatus(201)
+        // return res.status(201).send(createdBattleId)
       })
     })
   })

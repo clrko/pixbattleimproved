@@ -75,12 +75,12 @@ router.get('/', checkToken, (req, res) => {
   })
 })
 
-router.post('/addpicture', upload.single('file'), (req, res) => {
+router.post('/addpicture', checkToken, upload.single('file'), (req, res) => {
   console.log(req.file)
   const sqlInsertPhoto = 'INSERT INTO photo (photo_url, create_date, user_id, battle_id, group_id) VALUES (?, NOW(), ?, ?, ?)'
   const valuesInsertPhoto = [
     req.file.filename,
-    req.body.userId,
+    req.user.userId,
     req.body.battleId,
     req.body.groupId
   ]
