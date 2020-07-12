@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`avatar` (
   `avatar_url` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`avatar_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`status` (
   `status_name` VARCHAR(45) NOT NULL DEFAULT 'post',
   PRIMARY KEY (`status_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`user` (
     FOREIGN KEY (`avatar_id`)
     REFERENCES `pix_battle`.`avatar` (`avatar_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 45
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 CREATE UNIQUE INDEX `email_UNIQUE` ON `pix_battle`.`user` (`email` ASC) VISIBLE;
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`group` (
     FOREIGN KEY (`admin_user_id`)
     REFERENCES `pix_battle`.`user` (`user_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 20
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 CREATE INDEX `fk_group_user1_idx` ON `pix_battle`.`group` (`admin_user_id` ASC) VISIBLE;
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`theme` (
   `theme_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`theme_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 159
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`battle` (
     FOREIGN KEY (`winner_user_id`)
     REFERENCES `pix_battle`.`user` (`user_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 9
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 CREATE INDEX `fk_battle_theme1_idx` ON `pix_battle`.`battle` (`theme_id` ASC) VISIBLE;
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS `pix_battle`.`rule` (
   `rule_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`rule_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 8
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8;
 
 
