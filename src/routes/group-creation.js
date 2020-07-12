@@ -7,7 +7,7 @@ const router = express.Router()
 
 // Quand l'utilisateur clique sur le bouton 'Créer un groupe' sur la page profil
 router.post('/', checkToken, (req, res) => {
-  const sql = 'INSERT INTO `group` (create_date, admin_user_id) VALUES (NOW(), ?)'
+  const sql = 'INSERT INTO `group` (admin_user_id) VALUES ?'
   const values = [
     req.user.userId
   ]

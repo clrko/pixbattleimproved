@@ -30,7 +30,7 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  const sqlPostVote = 'INSERT INTO user_photo VALUES (?, ?, ?, NOW()), (?, ?, ?, NOW()), (?, ?, ?, NOW())'
+  const sqlPostVote = 'INSERT INTO user_photo (user_id, photo_id, vote) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)'
   const valuesPostVote = [
     req.body.userId,
     req.body.photoId1,
