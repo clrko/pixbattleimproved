@@ -43,8 +43,7 @@ router.post('/', checkToken, (req, res) => {
       ]
       connection.query(sqlUserBattle, userBattleValues, err => {
         if (err) throw err
-        return res.sendStatus(201)
-        // return res.status(201).send(createdBattleId)
+        return res.status(201).send({ battleId: createdBattleId })
       })
     })
   })
