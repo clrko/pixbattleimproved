@@ -14,14 +14,16 @@ router.post('/:groupId', checkToken, (req, res) => {
     if (err) throw err
     const existingEmails = existingUsers.map(user => user.email)
     const nonExistingEmails = emails.filter(email => !existingEmails.includes(email))
-    const sql = 'INSERT INTO user (email) VALUES (?)'
+    const sql = nonExistingEmails.length > 0
+      ? 'INSERT INTO user (email) VALUES ?'
+      : 'SELECT 1'
     const insertUserValues = nonExistingEmails.map(e => [e])
     connection.query(sql, [insertUserValues], err => {
       if (err) throw err
       const sql = `SELECT user_id FROM user WHERE email IN(${placeholders})`
       connection.query(sql, emails, (err, allUserIds) => {
         if (err) throw err
-        const sql = 'INSERT INTO user_group (user_id, group_id) VALUES (?)'
+        const sql = 'INSERT INTO user_group (user_id, group_id) VALUES ?'
         const insertUserGroupValues = allUserIds.map(user => [user.user_id, req.params.groupId])
         connection.query(sql, [insertUserGroupValues], err => {
           if (err) throw err
