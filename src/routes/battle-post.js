@@ -4,30 +4,30 @@ const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
 
-
-
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads');
+  destination: function (req, file, cb) {
+    cb(null, 'uploads')
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
   }
-});
+})
 
 const fileFilter = (req, file, cb) => {
-  //reject a file
-  if (file.mimetype === 'image/jpeg' ||  file.mimetype === 'image/png') {
-    cb(null, true);
+  // reject a file
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true)
   } else {
-    cb(new Error('This type of file is not supported'), null, false);
-  }  
+    cb(new Error('This type of file is not supported'), null, false)
+  }
 }
 
-const upload = multer({storage: storage, limits: {
-  fileSize: 1024 * 1024 * 5
-},
-fileFilter: fileFilter
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
 })
 
 // const upload = multer({
@@ -37,8 +37,6 @@ fileFilter: fileFilter
 //     next(err);
 //   }
 // })
-
-
 
 router.get('/', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
@@ -77,7 +75,7 @@ router.get('/', checkToken, (req, res) => {
 
 router.post('/addpicture', checkToken, upload.single('file'), (req, res) => {
   console.log(req.file)
-  const sqlInsertPhoto = 'INSERT INTO photo (photo_url, create_date, user_id, battle_id, group_id) VALUES (?, NOW(), ?, ?, ?)'
+  const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)'
   const valuesInsertPhoto = [
     req.file.filename,
     req.user.userId,

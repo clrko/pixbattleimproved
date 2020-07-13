@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
         if (err) throw err
         bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
           if (err) throw err
-          const sql = 'INSERT INTO user(username, email, password, avatar_id, create_date) VALUES(?, ?, ?, 1, NOW())'
+          const sql = 'INSERT INTO user(username, email, password, avatar_id) VALUES(?, ?, ?, 1)'
           const insertValues = [
             req.body.username,
             email,
