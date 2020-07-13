@@ -1,5 +1,9 @@
 node_modules
 .env
 package-lock.json
+<<<<<<< HEAD
 
 /uploads
+=======
+.DS_Store
+>>>>>>> d10a286be140ddfceec497e0b4457caad56691af
