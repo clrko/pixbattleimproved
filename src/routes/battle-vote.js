@@ -6,16 +6,41 @@ const connection = require('../helper/db')
 const router = express.Router()
 
 router.get('/', (req, res) => {
-  const sqlSelectParticipants = 'SELECT p.photo_id, p.photo_url, p.create_date, u.username, u.user_id, a.avatar_url FROM photo AS p JOIN user AS u ON u.user_id = p.user_id JOIN avatar AS a ON a.avatar_id = u.avatar_id WHERE p.battle_id = ? GROUP BY p.photo_id'
+  const sqlSelectParticipants =
+    `SELECT p.photo_id, p.photo_url, p.create_date, u.username, u.user_id, a.avatar_url 
+    FROM photo AS p 
+    JOIN user AS u 
+      ON u.user_id = p.user_id 
+    JOIN avatar AS a 
+      ON a.avatar_id = u.avatar_id 
+    WHERE p.battle_id = ? 
+    GROUP BY p.photo_id`
   const valueBattleId = [
     req.body.battleId
   ]
   connection.query(sqlSelectParticipants, valueBattleId, (err, allParticipants) => {
     if (err) throw err
-    const sqlVictories = 'select b.winner_user_id, count(b.winner_user_id) as victories from user as u join battle as b on b.winner_user_id = u.user_id join user_battle as ub on ub.user_id = u.user_id join battle as ba on ba.battle_id = ub.battle_id where ba.battle_id = ? group by b.winner_user_id'
+    const sqlVictories =
+      `SELECT b.winner_user_id, count(b.winner_user_id) AS victories 
+      FROM user AS u 
+      JOIN battle AS b 
+        ON b.winner_user_id = u.user_id 
+      JOIN user_battle AS ub 
+        ON ub.user_id = u.user_id 
+      JOIN battle AS ba 
+        ON ba.battle_id = ub.battle_id 
+      WHERE ba.battle_id = ? 
+      GROUP BY b.winner_user_id`
     connection.query(sqlVictories, valueBattleId, (err, allVictories) => {
       if (err) throw err
-      const sqlHasVoted = 'SELECT u.user_id FROM user AS u JOIN user_photo AS up ON up.user_id = u.user_id JOIN photo AS p ON p.photo_id = up.photo_id WHERE battle_id = ?'
+      const sqlHasVoted =
+        `SELECT u.user_id 
+        FROM user AS u 
+        JOIN user_photo AS up 
+          ON up.user_id = u.user_id 
+        JOIN photo AS p 
+          ON p.photo_id = up.photo_id 
+        WHERE battle_id = ?`
       connection.query(sqlHasVoted, valueBattleId, (err, allHasVoted) => {
         if (err) throw err
         const allInfos = {
@@ -30,7 +55,13 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  const sqlPostVote = 'INSERT INTO user_photo (user_id, photo_id, vote) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)'
+  const sqlPostVote =
+    `INSERT INTO user_photo 
+      (user_id, photo_id, vote) 
+    VALUES 
+      (?, ?, ?), 
+      (?, ?, ?), 
+      (?, ?, ?)`
   const valuesPostVote = [
     req.body.userId,
     req.body.photoId1,
