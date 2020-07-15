@@ -38,26 +38,48 @@ const upload = multer({
 //   }
 // })
 
-router.get('/', checkToken, (req, res) => {
+router.get('/:groupId/:battleId', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
   const valueGroupId = [
-    req.body.groupId
+    req.params.groupId
   ]
   connection.query(sqlGroupName, valueGroupId, (err, result) => {
     if (err) throw err
+    console.log(result)
     const groupName = {
       groupName: result[0].group_name
     }
-    const sqlBattleInfos = 'SELECT t.theme_name, b.deadline, r.rule_name FROM theme AS t JOIN battle AS b ON b.theme_id = t.theme_id JOIN battle_rule AS br ON br.battle_id = b.battle_id JOIN rule AS r ON r.rule_id = br.rule_id WHERE b.battle_id = ?'
+    const sqlBattleInfos =
+      `SELECT t.theme_name, b.deadline, r.rule_name 
+      FROM theme AS t 
+      JOIN battle AS b 
+        ON b.theme_id = t.theme_id 
+      JOIN battle_rule AS br
+        ON br.battle_id = b.battle_id 
+      JOIN rule AS r 
+        ON r.rule_id = br.rule_id 
+      WHERE b.battle_id = ?`
     const valueBattleId = [
-      req.body.battleId
+      req.params.battleId
     ]
     connection.query(sqlBattleInfos, valueBattleId, (err, battleInfos) => {
       if (err) throw err
-      const sqlBattleMembers = 'SELECT u.username, u.user_id, a.avatar_url FROM avatar AS a JOIN user AS u ON u.avatar_id = a.avatar_id JOIN user_battle AS ub ON ub.user_id = u.user_id WHERE ub.battle_id = ?'
+      const sqlBattleMembers =
+        `SELECT u.username, u.user_id, a.avatar_url 
+        FROM avatar AS a 
+        JOIN user AS u 
+          ON u.avatar_id = a.avatar_id 
+        JOIN user_battle AS ub 
+          ON ub.user_id = u.user_id 
+        WHERE ub.battle_id = ?`
       connection.query(sqlBattleMembers, valueBattleId, (err, battleMembers) => {
         if (err) throw err
-        const sqlMemberStatus = 'SELECT u.user_id FROM user AS u JOIN photo AS p ON p.user_id = u.user_id WHERE p.battle_id = ?'
+        const sqlMemberStatus =
+          `SELECT u.user_id 
+          FROM user AS u 
+          JOIN photo AS p 
+            ON p.user_id = u.user_id 
+          WHERE p.battle_id = ?`
         connection.query(sqlMemberStatus, valueBattleId, (err, battleMemberStatus) => {
           if (err) throw err
           const infos = {
