@@ -4,9 +4,12 @@ const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
 
+
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    const uploadsPath = process.env.PICS_UPLOADS_PATH || 'uploads'
+    cb(null, uploadsPath)
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
@@ -29,14 +32,6 @@ const upload = multer({
   },
   fileFilter: fileFilter
 })
-
-// const upload = multer({
-//   dest: 'uploads/',
-//   onError: function (err, next) {
-//     console.log('error', err);
-//     next(err);
-//   }
-// })
 
 router.get('/', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
