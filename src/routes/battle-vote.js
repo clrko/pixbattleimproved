@@ -1,6 +1,6 @@
 const express = require('express')
 
-// const checkToken = require('../helper/checkToken')
+const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 
 const router = express.Router()
@@ -54,7 +54,7 @@ router.get('/', (req, res) => {
   })
 })
 
-router.post('/', (req, res) => {
+router.post('/', checkToken, (req, res) => {
   const sqlPostVote =
     `INSERT INTO user_photo 
       (user_id, photo_id, vote) 
@@ -63,13 +63,13 @@ router.post('/', (req, res) => {
       (?, ?, ?), 
       (?, ?, ?)`
   const valuesPostVote = [
-    req.body.userId,
+    req.user.userId,
     req.body.photoId1,
     req.body.vote1,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId2,
     req.body.vote2,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId3,
     req.body.vote3
   ]
