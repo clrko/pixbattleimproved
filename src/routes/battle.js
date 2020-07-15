@@ -238,7 +238,7 @@ router.post('/battle-vote', (req, res) => {
 })
 
 // Battle General information
-router.get('/my-battles', /* checkToken, */ (req, res) => {
+router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, st.status_name
     FROM battle AS b
@@ -251,7 +251,7 @@ router.get('/my-battles', /* checkToken, */ (req, res) => {
     JOIN user_battle AS ub
       ON b.battle_id = ub.battle_id
     WHERE ub.user_id = ?`
-  connection.query(sqlGetBattleInformation, 1, (err, userBattleInformation) => {
+  connection.query(sqlGetBattleInformation, req.user.userId, (err, userBattleInformation) => {
     if (err) throw err
     res.status(200).send(userBattleInformation)
   })
