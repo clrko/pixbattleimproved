@@ -5,7 +5,7 @@ const connection = require('../helper/db')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
+router.post('/', (req, res) => {
   const sqlSelectParticipants = 'SELECT p.photo_id, p.photo_url, p.create_date, u.username, u.user_id, a.avatar_url FROM photo AS p JOIN user AS u ON u.user_id = p.user_id JOIN avatar AS a ON a.avatar_id = u.avatar_id WHERE p.battle_id = ? GROUP BY p.photo_id'
   const valueBattleId = [
     req.body.battleId
