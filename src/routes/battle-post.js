@@ -91,11 +91,11 @@ router.post('/addpicture', checkToken, upload.single('file'), (req, res) => {
   })
 })
 
-router.put('/', checkToken, (req, res) => {
+router.put('/:photoId', checkToken, (req, res) => {
   const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?'
   const valuesUpdatePhoto = [
     req.body.photoUrl,
-    req.body.photoId
+    req.params.photoId
   ]
   connection.query(sqlUpdatePhoto, valuesUpdatePhoto, err => {
     if (err) throw err
