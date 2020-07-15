@@ -87,7 +87,7 @@ router.post('/addpicture', checkToken, upload.single('file'), (req, res) => {
     const photoId = {
       photoId: photoRes.insertId
     }
-    res.status(200).send(photoId)
+    res.status(201).send(photoId)
   })
 })
 
