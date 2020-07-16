@@ -1,6 +1,6 @@
 const express = require('express')
 
-// const checkToken = require('../helper/checkToken')
+const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 
 const router = express.Router()
@@ -54,7 +54,28 @@ router.get('/', (req, res) => {
   })
 })
 
-router.post('/', (req, res) => {
+router.post('/status-user', checkToken, (req, res) => {
+  const sql =
+    `SELECT p.photo_id, p.photo_url, up.vote
+    FROM user_photo AS up
+    JOIN photo AS p
+    ON p.photo_id = up.photo_id
+    WHERE up.user_id = ?
+    AND p.battle_id = ?`
+  const values = [
+    req.user.userId,
+    req.body.battleId
+  ]
+  connection.query(sql, values, (err, result) => {
+    if (err) throw err
+    if (!result) {
+      res.status(200).send('nothing')
+    }
+    res.status(200).send(result)
+  })
+})
+
+router.post('/', checkToken, (req, res) => {
   const sqlPostVote =
     `INSERT INTO user_photo 
       (user_id, photo_id, vote) 
@@ -63,13 +84,13 @@ router.post('/', (req, res) => {
       (?, ?, ?), 
       (?, ?, ?)`
   const valuesPostVote = [
-    req.body.userId,
+    req.user.userId,
     req.body.photoId1,
     req.body.vote1,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId2,
     req.body.vote2,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId3,
     req.body.vote3
   ]
