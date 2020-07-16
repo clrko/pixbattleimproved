@@ -4,9 +4,12 @@ const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
 
+
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    const uploadsPath = process.env.PICS_UPLOADS_PATH || 'uploads'
+    cb(null, uploadsPath)
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
@@ -25,18 +28,10 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: process.env.PICS_UPLOADS_MAX_SIZE ? Number(process.env.PICS_UPLOADS_MAX_SIZE) : 1024 * 1024 * 5
   },
   fileFilter: fileFilter
 })
-
-// const upload = multer({
-//   dest: 'uploads/',
-//   onError: function (err, next) {
-//     console.log('error', err);
-//     next(err);
-//   }
-// })
 
 router.get('/:groupId/:battleId', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
@@ -109,15 +104,15 @@ router.post('/addpicture', checkToken, upload.single('file'), (req, res) => {
     const photoId = {
       photoId: photoRes.insertId
     }
-    res.status(200).send(photoId)
+    res.status(201).send(photoId)
   })
 })
 
-router.put('/', checkToken, (req, res) => {
+router.put('/:photoId', checkToken, (req, res) => {
   const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?'
   const valuesUpdatePhoto = [
     req.body.photoUrl,
-    req.body.photoId
+    req.params.photoId
   ]
   connection.query(sqlUpdatePhoto, valuesUpdatePhoto, err => {
     if (err) throw err
