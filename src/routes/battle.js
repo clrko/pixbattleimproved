@@ -53,7 +53,8 @@ router.post('/battle-creation', checkToken, (req, res) => {
 // Battle Post
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    const uploadsPath = process.env.PICS_UPLOADS_PATH || 'uploads'
+    cb(null, uploadsPath)
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
@@ -72,18 +73,10 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: process.env.PICS_UPLOADS_MAX_SIZE ? Number(process.env.PICS_UPLOADS_MAX_SIZE) : 1024 * 1024 * 5
   },
   fileFilter: fileFilter
 })
-
-// const upload = multer({
-//   dest: 'uploads/',
-//   onError: function (err, next) {
-//     console.log('error', err);
-//     next(err);
-//   }
-// })
 
 router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
@@ -156,15 +149,15 @@ router.post('/battle-post/addpicture', checkToken, upload.single('file'), (req, 
     const photoId = {
       photoId: photoRes.insertId
     }
-    res.status(200).send(photoId)
+    res.status(201).send(photoId)
   })
 })
 
-router.put('/battle-post', checkToken, (req, res) => {
+router.put('/battle-post/:photoId', checkToken, (req, res) => {
   const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?'
   const valuesUpdatePhoto = [
     req.body.photoUrl,
-    req.body.photoId
+    req.params.photoId
   ]
   connection.query(sqlUpdatePhoto, valuesUpdatePhoto, err => {
     if (err) throw err
@@ -234,7 +227,28 @@ router.get('/battle-vote', (req, res) => {
   })
 })
 
-router.post('/battle-vote', (req, res) => {
+router.post('/battle-vote/status-user', checkToken, (req, res) => {
+  const sql =
+    `SELECT p.photo_id, p.photo_url, up.vote
+    FROM user_photo AS up
+    JOIN photo AS p
+    ON p.photo_id = up.photo_id
+    WHERE up.user_id = ?
+    AND p.battle_id = ?`
+  const values = [
+    req.user.userId,
+    req.body.battleId
+  ]
+  connection.query(sql, values, (err, result) => {
+    if (err) throw err
+    if (!result) {
+      res.status(200).send('nothing')
+    }
+    res.status(200).send(result)
+  })
+})
+
+router.post('/battle-vote', checkToken, (req, res) => {
   const sqlPostVote =
     `INSERT INTO user_photo 
       (user_id, photo_id, vote) 
@@ -243,13 +257,13 @@ router.post('/battle-vote', (req, res) => {
       (?, ?, ?), 
       (?, ?, ?)`
   const valuesPostVote = [
-    req.body.userId,
+    req.user.userId,
     req.body.photoId1,
     req.body.vote1,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId2,
     req.body.vote2,
-    req.body.userId,
+    req.user.userId,
     req.body.photoId3,
     req.body.vote3
   ]
