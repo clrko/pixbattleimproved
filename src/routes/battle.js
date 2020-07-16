@@ -85,7 +85,6 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
   ]
   connection.query(sqlGroupName, valueGroupId, (err, result) => {
     if (err) throw err
-    console.log(result)
     const groupName = {
       groupName: result[0].group_name
     }
@@ -136,7 +135,6 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
 })
 
 router.post('/battle-post/addpicture', checkToken, upload.single('file'), (req, res) => {
-  console.log(req.file)
   const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)'
   const valuesInsertPhoto = [
     req.file.filename,
