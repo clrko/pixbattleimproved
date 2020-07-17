@@ -23,7 +23,7 @@ router.get('/battle-creation/rules', (req, res) => {
 
 router.post('/battle-creation', checkToken, (req, res) => {
   const userId = req.user.userId
-  const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id) VALUES (?, ?, ?, ?)'
+  const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
   const value = [
     req.body.deadline,
     req.body.groupId,
@@ -274,7 +274,7 @@ router.post('/battle-vote', checkToken, (req, res) => {
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
-    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, st.status_name
+    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
     FROM battle AS b
     JOIN theme AS t
       ON b.theme_id = t.theme_id

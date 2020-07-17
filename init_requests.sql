@@ -29,8 +29,7 @@ VALUES
 INSERT INTO rule
     (rule_name)
 VALUES
-    ('Capture d\'
-écran'),
+    ('Capture d\'écran'),
     ('Retouches'),
     ('Appareil photo'),
     ('Faire poser une personne'),
