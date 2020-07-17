@@ -274,7 +274,7 @@ router.post('/battle-vote', checkToken, (req, res) => {
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
-    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, st.status_name
+    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
     FROM battle AS b
     JOIN theme AS t
       ON b.theme_id = t.theme_id
