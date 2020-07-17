@@ -23,7 +23,7 @@ router.get('/battle-creation/rules', (req, res) => {
 
 router.post('/battle-creation', checkToken, (req, res) => {
   const userId = req.user.userId
-  const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id) VALUES (?, ?, ?, ?)'
+  const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
   const value = [
     req.body.deadline,
     req.body.groupId,
