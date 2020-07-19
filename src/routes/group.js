@@ -64,4 +64,27 @@ router.delete('/:groupId', checkToken, (req, res) => {
   })
 })
 
+// Group General Information
+router.get('/my-groups', checkToken, (req, res) => {
+  const sqlGetGroupInformation =
+    `SELECT 
+      gr.group_id, 
+      gr.group_name, 
+      gr.admin_user_id, 
+      SUM(CASE WHEN b.status_id = 1 OR b.status_id = 2 THEN 1 ELSE 0 END) AS ongoingBattles,
+      SUM(CASE WHEN b.status_id = 3 THEN 1 ELSE 0 END) AS finishedBattles,
+      COUNT(ug.user_id) AS groupMembers
+    FROM \`group\` AS gr
+    JOIN battle AS b
+      ON gr.group_id = b.group_id
+    JOIN user_group AS ug
+      ON gr.group_id = ug.group_id
+    WHERE gr.group_id IN (SELECT (ug.group_id) FROM user_group AS ug WHERE ug.user_id = ?)
+    GROUP BY gr.group_id`
+  connection.query(sqlGetGroupInformation, req.user.userId, (err, userGroupInformation) => {
+    if (err) throw err
+    res.status(200).send(userGroupInformation)
+  })
+})
+
 module.exports = router
