@@ -1,7 +1,7 @@
 const express = require('express')
 
-// const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
+const checkToken = require('../helper/checkToken')
 
 const router = express.Router()
 
@@ -23,9 +23,10 @@ router.get('/group', (req, res) => {
   })
 })
 
-router.get('/user', (req, res) => {
-  const sqlPhotosUser = 'SELECT  * FROM photo AS p JOIN user AS u ON u.user_id = p.user_id WHERE u.user_id = ?'
-  const userId = [req.body.userId]
+router.get('/user/:userId', checkToken, (req, res) => {
+  const sqlPhotosUser = 'SELECT * FROM photo WHERE user_id = ?'
+  const userId = [req.user.userId]
+  console.log(userId)
   connection.query(sqlPhotosUser, userId, (err, photosUserUrls) => {
     if (err) throw err
     res.status(200).send(photosUserUrls)
