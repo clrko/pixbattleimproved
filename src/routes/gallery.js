@@ -26,7 +26,6 @@ router.get('/group', (req, res) => {
 router.get('/user/:userId', checkToken, (req, res) => {
   const sqlPhotosUser = 'SELECT * FROM photo WHERE user_id = ?'
   const userId = [req.user.userId]
-  console.log(userId)
   connection.query(sqlPhotosUser, userId, (err, photosUserUrls) => {
     if (err) throw err
     res.status(200).send(photosUserUrls)
