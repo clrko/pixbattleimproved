@@ -312,22 +312,53 @@ router.put('/results', (req, res) => {
   })
 })
 
-router.get('/:battleId/results', (req, res) => {
-  const battleId = req.params.battleId
-  const sqlGetScore =
-    `SELECT up.photo_id, u.username, u.user_id, a.avatar_url, p.photo_url ,p.create_date AS date, COUNT(up.vote) AS nbVote, SUM(up.vote) AS score 
+router.get('/:groupId/:battleId/results', (req, res) => {
+  const ids = [
+    req.params.groupId,
+    req.params.battleId
+  ]
+  const sqlGetInfosUsers =
+    `SELECT u.user_id, u.username, a.avatar_url
     FROM avatar AS a
-      JOIN user AS u
+    JOIN user AS u
       ON u.avatar_id = a.avatar_id
-        JOIN user_photo AS up 
-        ON up.user_id = u.user_id
-        JOIN photo AS p 
-          ON up.photo_id = p.photo_id 
-        WHERE p.battle_id = ?
-        GROUP BY up.photo_id, u.user_id`
-  connection.query(sqlGetScore, battleId, (err, scores) => {
+    JOIN user_group AS ug
+      ON ug.user_id = u.user_id
+    JOIN user_battle AS ub
+      ON ub.user_id = u.user_id
+    WHERE ug.group_id = ?
+      AND ub.battle_id = ?`
+  connection.query(sqlGetInfosUsers, ids, (err, infosUsers) => {
     if (err) throw err
-    res.status(200).send(scores)
+    const sqlGetVictories =
+      `SELECT u.user_id, b.winner_user_id, COUNT(b.winner_user_id) AS victories
+      FROM user AS u
+      JOIN battle AS b
+        ON b.winner_user_id = u.user_id
+        JOIN user_group AS ug
+        ON ug.user_id = u.user_id
+      JOIN user_battle AS ub
+        ON ub.user_id = u.user_id
+      WHERE ug.group_id = ?
+        AND ub.battle_id = ?
+      GROUP BY u.user_id`
+    connection.query(sqlGetVictories, ids, (err, victories) => {
+      if (err) throw err
+      const sqlGetScores =
+        `SELECT p.user_id, up.photo_id, p.photo_url ,p.create_date AS date, COUNT(up.vote) AS nbVote, SUM(up.vote) AS score
+        FROM photo AS p
+        JOIN user_photo AS up
+          ON up.photo_id = p.photo_id
+        WHERE group_id = ?
+          AND battle_id = ?
+        GROUP BY up.photo_id`
+      connection.query(sqlGetScores, ids, (err, scores) => {
+        if (err) throw err
+        const sortedScores = scores.sort((a, b) => b.score - a.score)
+        const battleResults = { infosUsers, victories, sortedScores }
+        res.status(200).send(battleResults)
+      })
+    })
   })
 })
 
