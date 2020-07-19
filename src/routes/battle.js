@@ -365,6 +365,29 @@ router.get('/:groupId/:battleId/results', (req, res) => {
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
+  `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
+  FROM battle AS b
+  JOIN theme AS t
+    ON b.theme_id = t.theme_id
+  JOIN \`group\` AS gr
+    ON b.group_id = gr.group_id
+  JOIN \`status\` AS st
+    ON b.status_id = st.status_id
+  JOIN user_battle AS ub
+    ON b.battle_id = ub.battle_id
+  WHERE ub.user_id = ?`
+
+  const sqlGetBattleInformationValues = [
+    req.user.userId
+  ]
+  connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues, (err, userBattleInformation) => {
+    if (err) throw err
+    res.status(200).send(userBattleInformation)
+  })
+})
+
+router.get('/my-battles/:groupId', checkToken, (req, res) => {
+  const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
         FROM battle AS b
         JOIN theme AS t
@@ -375,8 +398,14 @@ router.get('/my-battles', checkToken, (req, res) => {
       ON b.status_id = st.status_id
     JOIN user_battle AS ub
       ON b.battle_id = ub.battle_id
-    WHERE ub.user_id = ?`
-  connection.query(sqlGetBattleInformation, req.user.userId, (err, userBattleInformation) => {
+    WHERE ub.user_id = ? AND b.group_id = ?`
+
+  const sqlGetBattleInformationValues = [
+    req.user.userId,
+    req.params.groupId
+  ]
+
+  connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues, (err, userBattleInformation) => {
     if (err) throw err
     res.status(200).send(userBattleInformation)
   })
