@@ -12,6 +12,7 @@ router.post('/', (req, res) => {
   const values = [
     req.body.email
   ]
+  console.log(req.body.invitationCode)
   connection.query(sql, values, (err, result) => {
     if (err) throw err
     if (result.length === 0) {

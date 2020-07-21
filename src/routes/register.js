@@ -10,6 +10,7 @@ const router = express.Router()
 router.post('/', (req, res) => {
   const sql = 'SELECT user_id, username, email FROM user WHERE email = ?'
   const email = req.body.email
+  console.log(req.body.invitationCode)
   connection.query(sql, [email], (err, result) => {
     if (err) throw err
     // Utilisateur non inscrit et non invité
