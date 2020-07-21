@@ -1,7 +1,7 @@
 const express = require('express')
 
-// const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
+const checkToken = require('../helper/checkToken')
 
 const router = express.Router()
 
@@ -23,12 +23,36 @@ router.get('/group', (req, res) => {
   })
 })
 
-router.get('/user', (req, res) => {
-  const sqlPhotosUser = 'SELECT  * FROM photo AS p JOIN user AS u ON u.user_id = p.user_id WHERE u.user_id = ?'
-  const userId = [req.body.userId]
+router.get('/user/:userId', checkToken, (req, res) => {
+  const sqlPhotosUser =
+    `SELECT u.username, a.avatar_url, p.*
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN photo AS p
+      ON p.user_id = u.user_id
+    WHERE p.user_id = ?`
+  const userId = [req.user.userId]
   connection.query(sqlPhotosUser, userId, (err, photosUserUrls) => {
     if (err) throw err
-    res.status(200).send(photosUserUrls)
+    const sqlUserVotes =
+      `SELECT u.username, a.avatar_url, up.vote, up.photo_id
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN user_photo AS up
+      ON up.user_id = u.user_id
+    JOIN photo AS p
+      ON p.photo_id = up.photo_id
+    WHERE p.user_id = ?`
+    connection.query(sqlUserVotes, userId, (err, userVoteInfos) => {
+      if (err) throw err
+      const infosPhotosUser = {
+        photosUserUrls,
+        userVoteInfos
+      }
+      res.status(200).send(infosPhotosUser)
+    })
   })
 })
 
