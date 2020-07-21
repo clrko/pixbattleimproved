@@ -307,8 +307,7 @@ router.get('/my-battles/:groupId', checkToken, (req, res) => {
       ON b.status_id = st.status_id
     JOIN user_battle AS ub
       ON b.battle_id = ub.battle_id
-    WHERE ub.user_id = ? AND b.group_id = ?
-    GROUP BY b.battle_id`
+    WHERE ub.user_id = ? AND b.group_id = ?`
 
   const sqlGetBattleInformationValues = [
     req.user.userId,
