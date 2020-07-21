@@ -24,7 +24,14 @@ router.get('/group', (req, res) => {
 })
 
 router.get('/user/:userId', checkToken, (req, res) => {
-  const sqlPhotosUser = 'SELECT * FROM photo WHERE user_id = ?'
+  const sqlPhotosUser =
+    `SELECT u.username, a.avatar_url, p.* 
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN photo AS p
+      ON p.user_id = u.user_id
+    WHERE p.user_id = ?`
   const userId = [req.user.userId]
   connection.query(sqlPhotosUser, userId, (err, photosUserUrls) => {
     if (err) throw err
