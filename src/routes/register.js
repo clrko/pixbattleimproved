@@ -64,40 +64,6 @@ router.post('/', (req, res) => {
     if (result[0].email && result[0].username) {
       return res.send('Tu es déjà inscrit')
     }
-    // Utilisateur invité mais pas encore inscrit
-    /* const saltRounds = 10
-    const myPlaintextPassword = req.body.password
-    bcrypt.genSalt(saltRounds, (err, salt) => {
-      if (err) throw err
-      bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
-        if (err) throw err
-        const sql = 'UPDATE user SET username = ?, password = ?, avatar_id = 1 WHERE email = ?'
-        const updateValues = [
-          req.body.username,
-          hash,
-          req.body.email
-        ]
-        connection.query(sql, updateValues, err => {
-          if (err) throw err
-          const sql = 'SELECT user_id, username, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
-          const selectValues = [
-            email
-          ]
-          connection.query(sql, selectValues, (err, result) => {
-            if (err) throw err
-            const tokenUserInfo = {
-              userId: result[0].user_id,
-              username: result[0].username,
-              avatar: result[0].avatar_url
-            }
-            const token = jwt.sign(tokenUserInfo, jwtSecret)
-            res.header('Access-Control-Expose-Headers', 'x-access-token')
-            res.set('x-access-token', token)
-            return res.status(200).send(tokenUserInfo)
-          })
-        })
-      })
-    }) */
   })
 })
 

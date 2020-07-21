@@ -22,14 +22,23 @@ router.post('/', (req, res) => {
     bcrypt.compare(myPlaintextPassword, result[0].password, (err, result) => {
       if (err) throw err
       if (result) {
+        // If user has received an invitation code
         if (req.body.invitationCode) {
-          const sqlInviteGroup = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
-          const valuesInviteGroup = [userId, req.body.invitationCode]
-          connection.query(sqlInviteGroup, valuesInviteGroup, err => {
+          // Check if user is already part of the group
+          const sqlInviteCheck = 'SELECT (user_id, group_id) FROM user_group WHERE user_id = ? AND group_id = ?'
+          const valuesInvite = [userId, req.body.invitationCode]
+          connection.query(sqlInviteCheck, valuesInvite, (err, resultCheck) => {
             if (err) throw err
-            const sqlInviteBattle = 'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))'
-            const valuesInviteBattle = [result[0].user_id, req.body.invitationCode]
-            connection.query(sqlInviteBattle, valuesInviteBattle, err => { if (err) throw err })
+            // User not part of the group
+            if (!resultCheck) {
+              const sqlInviteGroup = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
+              connection.query(sqlInviteGroup, valuesInvite, err => {
+                if (err) throw err
+                const sqlInviteBattle = 'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))'
+                const valuesInviteBattle = [result[0].user_id, req.body.invitationCode]
+                connection.query(sqlInviteBattle, valuesInviteBattle, err => { if (err) throw err })
+              })
+            }
           })
         }
         const tokenUserInfo = {
