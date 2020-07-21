@@ -25,7 +25,7 @@ router.get('/group', (req, res) => {
 
 router.get('/user/:userId', checkToken, (req, res) => {
   const sqlPhotosUser =
-    `SELECT u.username, a.avatar_url, p.* 
+    `SELECT u.username, a.avatar_url, p.*
     FROM avatar AS a
     JOIN user AS u
       ON u.avatar_id = a.avatar_id
@@ -35,7 +35,24 @@ router.get('/user/:userId', checkToken, (req, res) => {
   const userId = [req.user.userId]
   connection.query(sqlPhotosUser, userId, (err, photosUserUrls) => {
     if (err) throw err
-    res.status(200).send(photosUserUrls)
+    const sqlUserVotes =
+      `SELECT u.username, a.avatar_url, up.vote, up.photo_id
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN user_photo AS up
+      ON up.user_id = u.user_id
+    JOIN photo AS p
+      ON p.photo_id = up.photo_id
+    WHERE p.user_id = ?`
+    connection.query(sqlUserVotes, userId, (err, userVoteInfos) => {
+      if (err) throw err
+      const infosPhotosUser = {
+        photosUserUrls,
+        userVoteInfos
+      }
+      res.status(200).send(infosPhotosUser)
+    })
   })
 })
 
