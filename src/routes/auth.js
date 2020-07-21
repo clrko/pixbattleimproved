@@ -23,9 +23,14 @@ router.post('/', (req, res) => {
       if (err) throw err
       if (result) {
         if (req.body.invitationCode) {
-          const sqlInvite = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
-          const valuesInvite = [userId, req.body.invitationCode]
-          connection.query(sqlInvite, valuesInvite, err => { if (err) throw err })
+          const sqlInviteGroup = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
+          const valuesInviteGroup = [userId, req.body.invitationCode]
+          connection.query(sqlInviteGroup, valuesInviteGroup, err => {
+            if (err) throw err
+            const sqlInviteBattle = 'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))'
+            const valuesInviteBattle = [result[0].user_id, req.body.invitationCode]
+            connection.query(sqlInviteBattle, valuesInviteBattle, err => { if (err) throw err })
+          })
         }
         const tokenUserInfo = {
           userId: userId,
