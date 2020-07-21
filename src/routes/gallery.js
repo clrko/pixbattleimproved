@@ -14,9 +14,9 @@ router.get('/battle/:battleId', (req, res) => {
   })
 })
 
-router.get('/group', (req, res) => {
+router.get('/group/:groupId', (req, res) => {
   const sqlPhotosGroup = 'SELECT  * FROM photo AS p JOIN `group` AS g ON g.group_id = p.group_id WHERE g.group_id = ?'
-  const groupId = [req.body.groupId]
+  const groupId = [req.params.groupId]
   connection.query(sqlPhotosGroup, groupId, (err, photosGroupUrls) => {
     if (err) throw err
     res.status(200).send(photosGroupUrls)
