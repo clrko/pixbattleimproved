@@ -103,32 +103,56 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
     ]
     connection.query(sqlBattleInfos, valueBattleId, (err, battleInfos) => {
       if (err) throw err
-      const sqlBattleMembers =
-        `SELECT u.username, u.user_id, a.avatar_url 
-        FROM avatar AS a 
-        JOIN user AS u 
-          ON u.avatar_id = a.avatar_id 
-        JOIN user_battle AS ub 
-          ON ub.user_id = u.user_id 
-        WHERE ub.battle_id = ?`
-      connection.query(sqlBattleMembers, valueBattleId, (err, battleMembers) => {
+      const infos = {
+        groupName,
+        battleInfos
+      }
+      res.status(200).send(infos)
+    })
+  })
+})
+
+router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
+  const battleId = [
+    req.params.battleId
+  ]
+  const sqlBattleMembers =
+    `SELECT u.username, u.user_id, a.avatar_url 
+    FROM avatar AS a 
+    JOIN user AS u 
+      ON u.avatar_id = a.avatar_id 
+    JOIN user_battle AS ub 
+      ON ub.user_id = u.user_id 
+    WHERE ub.battle_id = ?`
+  connection.query(sqlBattleMembers, battleId, (err, battleMembers) => {
+    if (err) throw err
+    const sqlVictories =
+      `SELECT b.winner_user_id, count(b.winner_user_id) AS victories 
+      FROM user AS u 
+      JOIN battle AS b 
+        ON b.winner_user_id = u.user_id 
+      JOIN user_battle AS ub 
+        ON ub.user_id = u.user_id 
+      JOIN battle AS ba 
+        ON ba.battle_id = ub.battle_id 
+      WHERE ba.battle_id = ? 
+      GROUP BY b.winner_user_id`
+    connection.query(sqlVictories, battleId, (err, battleMembersVictories) => {
+      if (err) throw err
+      const sqlMemberStatus =
+        `SELECT u.user_id 
+        FROM user AS u 
+        JOIN photo AS p 
+          ON p.user_id = u.user_id 
+        WHERE p.battle_id = ?`
+      connection.query(sqlMemberStatus, battleId, (err, battleMemberStatus) => {
         if (err) throw err
-        const sqlMemberStatus =
-          `SELECT u.user_id 
-          FROM user AS u 
-          JOIN photo AS p 
-            ON p.user_id = u.user_id 
-          WHERE p.battle_id = ?`
-        connection.query(sqlMemberStatus, valueBattleId, (err, battleMemberStatus) => {
-          if (err) throw err
-          const infos = {
-            groupName,
-            battleInfos,
-            battleMembers,
-            battleMemberStatus
-          }
-          res.status(200).send(infos)
-        })
+        const infos = {
+          battleMembers,
+          battleMembersVictories,
+          battleMemberStatus
+        }
+        res.status(200).send(infos)
       })
     })
   })
@@ -175,8 +199,7 @@ router.delete('/battle-post', checkToken, (req, res) => {
 })
 
 // Battle Vote
-
-router.get('/battle-vote', (req, res) => {
+router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
   const sqlSelectParticipants =
     `SELECT p.photo_id, p.photo_url, p.create_date, u.username, u.user_id, a.avatar_url 
     FROM photo AS p 
@@ -187,7 +210,7 @@ router.get('/battle-vote', (req, res) => {
     WHERE p.battle_id = ? 
     GROUP BY p.photo_id`
   const valueBattleId = [
-    req.body.battleId
+    req.params.battleId
   ]
   connection.query(sqlSelectParticipants, valueBattleId, (err, allParticipants) => {
     if (err) throw err
@@ -230,7 +253,7 @@ router.post('/battle-vote/status-user', checkToken, (req, res) => {
     `SELECT p.photo_id, p.photo_url, up.vote
     FROM user_photo AS up
     JOIN photo AS p
-    ON p.photo_id = up.photo_id
+      ON p.photo_id = up.photo_id
     WHERE up.user_id = ?
     AND p.battle_id = ?`
   const values = [
@@ -274,7 +297,7 @@ router.post('/battle-vote', checkToken, (req, res) => {
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
-  `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
+    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
   FROM battle AS b
   JOIN theme AS t
     ON b.theme_id = t.theme_id
