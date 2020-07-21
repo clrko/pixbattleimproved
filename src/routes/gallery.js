@@ -5,9 +5,9 @@ const checkToken = require('../helper/checkToken')
 
 const router = express.Router()
 
-router.post('/battle', (req, res) => {
+router.get('/battle/:battleId', (req, res) => {
   const sqlPhotosBattle = 'SELECT * FROM photo AS p JOIN battle AS b ON b.battle_id = p.battle_id WHERE b.battle_id = ?'
-  const battleId = [req.body.battleId]
+  const battleId = [req.params.battleId]
   connection.query(sqlPhotosBattle, battleId, (err, photosBattleUrls) => {
     if (err) throw err
     res.status(200).send(photosBattleUrls)
