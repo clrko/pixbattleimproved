@@ -7,7 +7,7 @@ const router = express.Router()
 
 // Sur la page de création du groupe
 router.post('/:groupId', checkToken, (req, res) => {
-  const emails = req.body.allEmails
+  /* const emails = req.body.allEmails
   const placeholders = new Array(emails.length).fill('?')
   const sql = `SELECT user_id, email FROM user WHERE email IN(${placeholders})`
   connection.query(sql, emails, (err, existingUsers) => {
@@ -30,7 +30,10 @@ router.post('/:groupId', checkToken, (req, res) => {
         })
       })
     })
-  })
+  }) */
+  const emails = req.body.allEmails
+  eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, groupId: req.params.groupId })
+  return res.sendStatus(200)
 })
 
 /* table avec un code et group_id associé pour envoyer  */

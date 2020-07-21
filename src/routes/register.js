@@ -13,7 +13,7 @@ router.post('/', (req, res) => {
   console.log(req.body.invitationCode)
   connection.query(sql, [email], (err, result) => {
     if (err) throw err
-    // Utilisateur non inscrit et non invité
+    // Utilisateur non inscrit
     if (!result[0]) {
       const saltRounds = 10
       const myPlaintextPassword = req.body.password
@@ -35,6 +35,12 @@ router.post('/', (req, res) => {
             ]
             connection.query(sql, selectValues, (err, result) => {
               if (err) throw err
+              // Utilisateur invité
+              if (req.body.invitationCode) {
+                const sqlInvite = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
+                const valuesInvite = [result[0].user_id, req.body.invitationCode]
+                connection.query(sqlInvite, valuesInvite, err => { if (err) throw err })
+              }
               const tokenUserInfo = {
                 userId: result[0].user_id,
                 username: result[0].username,
@@ -54,7 +60,7 @@ router.post('/', (req, res) => {
       return res.send('Tu es déjà inscrit')
     }
     // Utilisateur invité mais pas encore inscrit
-    const saltRounds = 10
+    /* const saltRounds = 10
     const myPlaintextPassword = req.body.password
     bcrypt.genSalt(saltRounds, (err, salt) => {
       if (err) throw err
@@ -86,7 +92,7 @@ router.post('/', (req, res) => {
           })
         })
       })
-    })
+    }) */
   })
 })
 

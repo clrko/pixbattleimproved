@@ -12,7 +12,6 @@ router.post('/', (req, res) => {
   const values = [
     req.body.email
   ]
-  console.log(req.body.invitationCode)
   connection.query(sql, values, (err, result) => {
     if (err) throw err
     if (result.length === 0) {
@@ -20,10 +19,14 @@ router.post('/', (req, res) => {
     }
     const myPlaintextPassword = req.body.password
     const { user_id: userId, username, avatar_url: avatar } = result[0]
-
     bcrypt.compare(myPlaintextPassword, result[0].password, (err, result) => {
       if (err) throw err
       if (result) {
+        if (req.body.invitationCode) {
+          const sqlInvite = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
+          const valuesInvite = [userId, req.body.invitationCode]
+          connection.query(sqlInvite, valuesInvite, err => { if (err) throw err })
+        }
         const tokenUserInfo = {
           userId: userId,
           username: username,
