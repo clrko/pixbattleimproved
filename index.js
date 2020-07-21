@@ -13,7 +13,6 @@ app.use(express.json())
 app.use(express.static('uploads'))
 app.use(express.urlencoded({ extended: true }))
 
-
 app.use('/auth', routes.Auth)
 app.use('/battle', routes.Battle)
 app.use('/gallery', routes.Gallery)
