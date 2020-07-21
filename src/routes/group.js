@@ -2,7 +2,7 @@ const express = require('express')
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
-
+const eventEmitterMail = require('../helper/eventEmitterMail')
 const router = express.Router()
 
 // Sur la page de création du groupe
@@ -25,12 +25,15 @@ router.post('/:groupId', checkToken, (req, res) => {
         const insertUserGroupValues = allUserIds.map(user => [user.user_id, req.params.groupId])
         connection.query(sql, [insertUserGroupValues], err => {
           if (err) throw err
+          eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, groupId: req.params.groupId })
           return res.sendStatus(200)
         })
       })
     })
   })
 })
+
+/* table avec un code et group_id associé pour envoyer  */
 
 // Au moment du choix du nom du groupe
 router.put('/:groupId', checkToken, (req, res) => {
