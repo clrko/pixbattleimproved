@@ -272,111 +272,44 @@ router.post('/battle-vote', checkToken, (req, res) => {
 })
 
 // Battle Results
-router.put('/results', (req, res) => {
-  // const battleId = [req.body.battleId]
-  // const sql = 'SELECT photo_id FROM photo WHERE battle_id = ?'
-  // connection.query(sql, battleId, (err, results) => {
-  //   if (err) throw err
-  //   const ids = results.map(p => [p.photo_id])
-  //   const sql2 =
-  //     `UPDATE photo SET score = (SELECT SUM(vote) FROM user_photo WHERE photo_id = ?) WHERE photo_id = ?`
-  //   values = [[ids], [ids]]
-  //   connection.query(sql2, values, (err, results2) => {
-  //     if (err) throw err
-  //     console.log(results2)
-  //     res.sendStatus(200)
-  //   })
-  // })
-  const sqlGetScore =
-    `SELECT up.photo_id, p.create_date AS date, COUNT(up.vote) AS nbVote, SUM(up.vote) AS score 
-      FROM user_photo AS up 
-      JOIN photo AS p 
-        ON up.photo_id = p.photo_id 
-      WHERE p.battle_id = ?
-      GROUP BY up.photo_id`
-  const battleId = [req.body.battleId]
-  connection.query(sqlGetScore, battleId, (err, allInfos) => {
-    if (err) throw err
-    const infos = { allInfos }
-    // const infosToUpdate = allInfos.map(info => [info.photoId, info.score])
-    const scoresToUpdate = allInfos.map(s => [s.score])
-    const photoIdToUpdate = allInfos.map(i => [i.photo_id])
-    const placeholders = new Array(infos.length).fill('?')
-    const valuesToUpdate = [scoresToUpdate, photoIdToUpdate]
-    const sqlToUpdate = `UPDATE photo SET score IN(${placeholders}) WHERE photo_id IN(${placeholders})`
-    console.log(scoresToUpdate, photoIdToUpdate)
-    connection.query(sqlToUpdate, [valuesToUpdate], (err, result57) => {
-      if (err) throw err
-      res.status(200).send(result57)
-    })
-  })
-})
-
 router.get('/:groupId/:battleId/results', (req, res) => {
   const ids = [
     req.params.groupId,
     req.params.battleId
   ]
-  const sqlGetInfosUsers =
-    `SELECT u.user_id, u.username, a.avatar_url
+  const sqlParticipantsList =
+    `SELECT u.username, u.user_id, a.avatar_url, p.score
     FROM avatar AS a
     JOIN user AS u
       ON u.avatar_id = a.avatar_id
-    JOIN user_group AS ug
-      ON ug.user_id = u.user_id
     JOIN user_battle AS ub
       ON ub.user_id = u.user_id
-    WHERE ug.group_id = ?
-      AND ub.battle_id = ?`
-  connection.query(sqlGetInfosUsers, ids, (err, infosUsers) => {
+    JOIN photo AS p
+      ON p.user_id = u.user_id
+    JOIN user_group AS ug
+    WHERE ub.battle_id = 1
+      GROUP BY u.username, u.user_id, p.score
+    ORDER BY p.score DESC`
+  connection.query(sqlParticipantsList, ids, (err, participantsList) => {
     if (err) throw err
-    const sqlGetVictories =
-      `SELECT u.user_id, b.winner_user_id, COUNT(b.winner_user_id) AS victories
-      FROM user AS u
-      JOIN battle AS b
-        ON b.winner_user_id = u.user_id
-        JOIN user_group AS ug
-        ON ug.user_id = u.user_id
-      JOIN user_battle AS ub
-        ON ub.user_id = u.user_id
-      WHERE ug.group_id = ?
-        AND ub.battle_id = ?
-      GROUP BY u.user_id`
-    connection.query(sqlGetVictories, ids, (err, victories) => {
-      if (err) throw err
-      const sqlGetScores =
-        `SELECT p.user_id, up.photo_id, p.photo_url ,p.create_date AS date, COUNT(up.vote) AS nbVote, SUM(up.vote) AS score
-        FROM photo AS p
-        JOIN user_photo AS up
-          ON up.photo_id = p.photo_id
-        WHERE group_id = ?
-          AND battle_id = ?
-        GROUP BY up.photo_id`
-      connection.query(sqlGetScores, ids, (err, scores) => {
-        if (err) throw err
-        const sortedScores = scores.sort((a, b) => b.score - a.score)
-        const battleResults = { infosUsers, victories, sortedScores }
-        res.status(200).send(battleResults)
-      })
-    })
+    res.status(200).send(participantsList)
   })
 })
 
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
-  `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
-  FROM battle AS b
-  JOIN theme AS t
-    ON b.theme_id = t.theme_id
-  JOIN \`group\` AS gr
-    ON b.group_id = gr.group_id
-  JOIN \`status\` AS st
-    ON b.status_id = st.status_id
-  JOIN user_battle AS ub
-    ON b.battle_id = ub.battle_id
-  WHERE ub.user_id = ?`
-
+    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
+    FROM battle AS b
+    JOIN theme AS t
+      ON b.theme_id = t.theme_id
+    JOIN \`group\` AS gr
+      ON b.group_id = gr.group_id
+    JOIN \`status\` AS st
+      ON b.status_id = st.status_id
+    JOIN user_battle AS ub
+      ON b.battle_id = ub.battle_id
+    WHERE ub.user_id = ?`
   const sqlGetBattleInformationValues = [
     req.user.userId
   ]
@@ -389,17 +322,16 @@ router.get('/my-battles', checkToken, (req, res) => {
 router.get('/my-battles/:groupId', checkToken, (req, res) => {
   const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
-        FROM battle AS b
-        JOIN theme AS t
-        ON b.theme_id = t.theme_id
-        JOIN \`group\` AS gr
+      FROM battle AS b
+      JOIN theme AS t
+      ON b.theme_id = t.theme_id
+      JOIN \`group\` AS gr
       ON b.group_id = gr.group_id
     JOIN \`status\` AS st
       ON b.status_id = st.status_id
     JOIN user_battle AS ub
       ON b.battle_id = ub.battle_id
     WHERE ub.user_id = ? AND b.group_id = ?`
-
   const sqlGetBattleInformationValues = [
     req.user.userId,
     req.params.groupId
