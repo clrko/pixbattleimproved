@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 
 const connection = require('../helper/db')
 const { jwtSecret } = require('../../config')
+const { decrypt } = require('../helper/encryptionCode')
 
 const router = express.Router()
 
@@ -37,12 +38,13 @@ router.post('/', (req, res) => {
               if (err) throw err
               // Utilisateur invité
               if (req.body.invitationCode) {
+                const groupId = decrypt(req.body.invitationCode).substr(5)
                 const sqlInviteGroup = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
-                const valuesInviteGroup = [result[0].user_id, req.body.invitationCode]
+                const valuesInviteGroup = [result[0].user_id, groupId]
                 connection.query(sqlInviteGroup, valuesInviteGroup, err => {
                   if (err) throw err
                   const sqlInviteBattle = 'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))'
-                  const valuesInviteBattle = [result[0].user_id, req.body.invitationCode]
+                  const valuesInviteBattle = [result[0].user_id, groupId]
                   connection.query(sqlInviteBattle, valuesInviteBattle, err => { if (err) throw err })
                 })
               }

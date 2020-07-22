@@ -12,5 +12,8 @@ module.exports = {
   mailPort: process.env.MAIL_PORT,
   mailUser: process.env.MAIL_USER,
   mailPass: process.env.MAIL_PASS,
-  appBaseUrl: process.env.APP_BASE_URL
+  appBaseUrl: process.env.APP_BASE_URL,
+  encryptAlgo: process.env.ENCRYPT_ALGO,
+  encryptPassword: process.env.ENCRYPT_PASSWORD,
+  encryptIv: process.env.ENCRYPT_IV
 }

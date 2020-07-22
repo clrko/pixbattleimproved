@@ -1,12 +1,12 @@
 const transporter = require('./transporter')
 const { mailUser, appBaseUrl } = require('../../config')
 
-const sendMail = ({ type, to, subject, groupId }) => {
+const sendMail = ({ type, to, subject, invitationCode }) => {
   const mailContent =
   `
   <h1>Hello</h1>
   <p>Tu as été invité à rejoindre Pix battle</p>
-  <a href=${appBaseUrl}/invite/${groupId}><strong>ME CONNECTER</strong></a>
+  <a href=${appBaseUrl}/invite/${invitationCode}><strong>JOUER</strong></a>
   `
   const mailOptions = {
     from: `"Maxime de PixBattle" <${mailUser}>`,

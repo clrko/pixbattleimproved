@@ -1,9 +1,10 @@
 const express = require('express')
+const router = express.Router()
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const eventEmitterMail = require('../helper/eventEmitterMail')
-const router = express.Router()
+const { encrypt } = require('../helper/encryptionCode')
 
 // Sur la page de création du groupe
 router.post('/:groupId', checkToken, (req, res) => {
@@ -32,7 +33,8 @@ router.post('/:groupId', checkToken, (req, res) => {
     })
   }) */
   const emails = req.body.allEmails
-  eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, groupId: req.params.groupId })
+  const invitationCode = encrypt(`group${req.params.groupId}`)
+  eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
   return res.sendStatus(200)
 })
 
@@ -85,7 +87,7 @@ router.get('/my-groups', checkToken, (req, res) => {
       ON gr.group_id = b.group_id
     INNER JOIN (SELECT ug.group_id AS group_id, COUNT(ug.user_id) AS group_users FROM user_group AS ug GROUP BY ug.group_id) AS gu
       ON gu.group_id = gr.group_id
-    WHERE gr.group_id IN (SELECT (ug.group_id) FROM user_group AS ug WHERE ug.user_id = 2)
+    WHERE gr.group_id IN (SELECT (ug.group_id) FROM user_group AS ug WHERE ug.user_id = ?)
     GROUP BY gr.group_id`
   connection.query(sqlGetGroupInformation, req.user.userId, (err, userGroupInformation) => {
     if (err) throw err
