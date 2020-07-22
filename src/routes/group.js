@@ -8,37 +8,11 @@ const { encrypt } = require('../helper/encryptionCode')
 
 // Sur la page de création du groupe
 router.post('/:groupId', checkToken, (req, res) => {
-  /* const emails = req.body.allEmails
-  const placeholders = new Array(emails.length).fill('?')
-  const sql = `SELECT user_id, email FROM user WHERE email IN(${placeholders})`
-  connection.query(sql, emails, (err, existingUsers) => {
-    if (err) throw err
-    const existingEmails = existingUsers.map(user => user.email)
-    const nonExistingEmails = emails.filter(email => !existingEmails.includes(email))
-    const sql = nonExistingEmails.length > 0 ? 'INSERT INTO user (email) VALUES ?' : 'SELECT 1'
-    const insertUserValues = nonExistingEmails.map(e => [e])
-    connection.query(sql, [insertUserValues], err => {
-      if (err) throw err
-      const sql = `SELECT user_id FROM user WHERE email IN(${placeholders})`
-      connection.query(sql, emails, (err, allUserIds) => {
-        if (err) throw err
-        const sql = 'INSERT INTO user_group (user_id, group_id) VALUES ?'
-        const insertUserGroupValues = allUserIds.map(user => [user.user_id, req.params.groupId])
-        connection.query(sql, [insertUserGroupValues], err => {
-          if (err) throw err
-          eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, groupId: req.params.groupId })
-          return res.sendStatus(200)
-        })
-      })
-    })
-  }) */
   const emails = req.body.allEmails
   const invitationCode = encrypt(`group${req.params.groupId}`)
   eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
   return res.sendStatus(200)
 })
-
-/* table avec un code et group_id associé pour envoyer  */
 
 // Au moment du choix du nom du groupe
 router.put('/:groupId', checkToken, (req, res) => {
