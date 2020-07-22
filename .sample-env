@@ -12,3 +12,4 @@ APP_BASE_URL=
 ENCRYPT_ALGO='aes-256-ctr'
 ENCRYPT_PASSWORD= 32 characters
 ENCRYPT_IV= 16 characters string
+PICS_UPLOADS_PATH=/path/to/uploaded/pictures

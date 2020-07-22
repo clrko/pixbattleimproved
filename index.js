@@ -11,7 +11,7 @@ const app = express()
 app.use(morgan('dev'))
 app.use(cors())
 app.use(express.json())
-app.use(express.static('uploads'))
+app.use(express.static(process.env.PICS_UPLOADS_PATH || 'uploads'))
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', routes.Auth)
