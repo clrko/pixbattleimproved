@@ -284,7 +284,7 @@ router.get('/:battleId/results', (req, res) => {
   connection.query(sqlParticipantsList, battleId, (err, participantsList) => {
     if (err) throw err
     const sqlVictoriesParticipants =
-      `SELECT u.user_id, b.winner_user_id, COUNT(b.winner_user_id) AS victories
+      `SELECT b.winner_user_id, COUNT(b.winner_user_id) AS victories
       FROM user AS u
       JOIN battle AS b
         ON b.winner_user_id = u.user_id
