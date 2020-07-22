@@ -29,7 +29,7 @@ router.post('/', (req, res) => {
           ]
           connection.query(sql, insertValues, err => {
             if (err) throw err
-            const sql = 'SELECT user_id, username, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
+            const sql = 'SELECT user_id, username, email, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
             const selectValues = [
               email
             ]
@@ -50,7 +50,8 @@ router.post('/', (req, res) => {
               const tokenUserInfo = {
                 userId: result[0].user_id,
                 username: result[0].username,
-                avatar: result[0].avatar_url
+                avatar: result[0].avatar_url,
+                userEmail: result[0].email
               }
               const token = jwt.sign(tokenUserInfo, jwtSecret)
               res.header('Access-Control-Expose-Headers', 'x-access-token')
