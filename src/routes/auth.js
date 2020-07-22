@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
       return res.status(401).send('The password or username is wrong')
     }
     const myPlaintextPassword = req.body.password
-    const { user_id: userId, username, avatar_url: avatar } = result[0]
+    const { user_id: userId, username, avatar_url: avatar, email: userEmail } = result[0]
     bcrypt.compare(myPlaintextPassword, result[0].password, (err, passwordMatch) => {
       if (err) throw err
       if (passwordMatch) {
@@ -46,7 +46,8 @@ router.post('/', (req, res) => {
         const tokenUserInfo = {
           userId: userId,
           username: username,
-          avatar: avatar
+          avatar: avatar,
+          userEmail: userEmail
         }
         const token = jwt.sign(tokenUserInfo, jwtSecret)
         res.header('Access-Control-Expose-Headers', 'x-access-token')
