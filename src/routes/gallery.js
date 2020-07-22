@@ -23,7 +23,7 @@ router.get('/group/:groupId', (req, res) => {
   })
 })
 
-router.get('/user/:userId', checkToken, (req, res) => {
+router.get('/user', checkToken, (req, res) => {
   const sqlPhotosUser =
     `SELECT u.username, a.avatar_url, p.*
     FROM avatar AS a
