@@ -1,35 +1,17 @@
 const express = require('express')
+const router = express.Router()
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
-
-const router = express.Router()
+const eventEmitterMail = require('../helper/eventEmitterMail')
+const { encrypt } = require('../helper/encryptionCode')
 
 // Sur la page de création du groupe
 router.post('/:groupId', checkToken, (req, res) => {
   const emails = req.body.allEmails
-  const placeholders = new Array(emails.length).fill('?')
-  const sql = `SELECT user_id, email FROM user WHERE email IN(${placeholders})`
-  connection.query(sql, emails, (err, existingUsers) => {
-    if (err) throw err
-    const existingEmails = existingUsers.map(user => user.email)
-    const nonExistingEmails = emails.filter(email => !existingEmails.includes(email))
-    const sql = nonExistingEmails.length > 0 ? 'INSERT INTO user (email) VALUES ?' : 'SELECT 1'
-    const insertUserValues = nonExistingEmails.map(e => [e])
-    connection.query(sql, [insertUserValues], err => {
-      if (err) throw err
-      const sql = `SELECT user_id FROM user WHERE email IN(${placeholders})`
-      connection.query(sql, emails, (err, allUserIds) => {
-        if (err) throw err
-        const sql = 'INSERT INTO user_group (user_id, group_id) VALUES ?'
-        const insertUserGroupValues = allUserIds.map(user => [user.user_id, req.params.groupId])
-        connection.query(sql, [insertUserGroupValues], err => {
-          if (err) throw err
-          return res.sendStatus(200)
-        })
-      })
-    })
-  })
+  const invitationCode = encrypt(`group${req.params.groupId}`)
+  eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
+  return res.sendStatus(200)
 })
 
 // Au moment du choix du nom du groupe
@@ -68,17 +50,17 @@ router.delete('/:groupId', checkToken, (req, res) => {
 router.get('/my-groups', checkToken, (req, res) => {
   const sqlGetGroupInformation =
     `SELECT 
-      gr.group_id, 
-      gr.group_name, 
-      gr.admin_user_id, 
-      SUM(CASE WHEN b.status_id = 1 OR b.status_id = 2 THEN 1 ELSE 0 END) AS ongoingBattles,
-      SUM(CASE WHEN b.status_id = 3 THEN 1 ELSE 0 END) AS finishedBattles,
-      COUNT(ug.user_id) AS groupMembers
+    gr.group_id, 
+    gr.group_name, 
+    gr.admin_user_id, 
+    SUM(CASE WHEN b.status_id = 1 OR b.status_id = 2 THEN 1 ELSE 0 END) AS ongoingBattles,
+    SUM(CASE WHEN b.status_id = 3 THEN 1 ELSE 0 END) AS finishedBattles,
+      gu.group_users AS groupMembers
     FROM \`group\` AS gr
-    JOIN battle AS b
+    INNER JOIN battle AS b
       ON gr.group_id = b.group_id
-    JOIN user_group AS ug
-      ON gr.group_id = ug.group_id
+    INNER JOIN (SELECT ug.group_id AS group_id, COUNT(ug.user_id) AS group_users FROM user_group AS ug GROUP BY ug.group_id) AS gu
+      ON gu.group_id = gr.group_id
     WHERE gr.group_id IN (SELECT (ug.group_id) FROM user_group AS ug WHERE ug.user_id = ?)
     GROUP BY gr.group_id`
   connection.query(sqlGetGroupInformation, req.user.userId, (err, userGroupInformation) => {

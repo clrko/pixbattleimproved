@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 
 const connection = require('../helper/db')
 const { jwtSecret } = require('../../config')
+const { decrypt } = require('../helper/encryptionCode')
 
 const router = express.Router()
 
@@ -12,7 +13,7 @@ router.post('/', (req, res) => {
   const email = req.body.email
   connection.query(sql, [email], (err, result) => {
     if (err) throw err
-    // Utilisateur non inscrit et non invité
+    // Utilisateur non inscrit
     if (!result[0]) {
       const saltRounds = 10
       const myPlaintextPassword = req.body.password
@@ -34,6 +35,18 @@ router.post('/', (req, res) => {
             ]
             connection.query(sql, selectValues, (err, result) => {
               if (err) throw err
+              // Utilisateur invité
+              if (req.body.invitationCode) {
+                const groupId = decrypt(req.body.invitationCode).substr(5)
+                const sqlInviteGroup = 'INSERT INTO user_group (user_id, group_id) VALUES (?, ?)'
+                const valuesInviteGroup = [result[0].user_id, groupId]
+                connection.query(sqlInviteGroup, valuesInviteGroup, err => {
+                  if (err) throw err
+                  const sqlInviteBattle = 'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))'
+                  const valuesInviteBattle = [result[0].user_id, groupId]
+                  connection.query(sqlInviteBattle, valuesInviteBattle, err => { if (err) throw err })
+                })
+              }
               const tokenUserInfo = {
                 userId: result[0].user_id,
                 username: result[0].username,
@@ -52,40 +65,6 @@ router.post('/', (req, res) => {
     if (result[0].email && result[0].username) {
       return res.send('Tu es déjà inscrit')
     }
-    // Utilisateur invité mais pas encore inscrit
-    const saltRounds = 10
-    const myPlaintextPassword = req.body.password
-    bcrypt.genSalt(saltRounds, (err, salt) => {
-      if (err) throw err
-      bcrypt.hash(myPlaintextPassword, salt, (err, hash) => {
-        if (err) throw err
-        const sql = 'UPDATE user SET username = ?, password = ?, avatar_id = 1 WHERE email = ?'
-        const updateValues = [
-          req.body.username,
-          hash,
-          req.body.email
-        ]
-        connection.query(sql, updateValues, err => {
-          if (err) throw err
-          const sql = 'SELECT user_id, username, a.avatar_url FROM user JOIN avatar AS a ON user.avatar_id = a.avatar_id  WHERE email = ?'
-          const selectValues = [
-            email
-          ]
-          connection.query(sql, selectValues, (err, result) => {
-            if (err) throw err
-            const tokenUserInfo = {
-              userId: result[0].user_id,
-              username: result[0].username,
-              avatar: result[0].avatar_url
-            }
-            const token = jwt.sign(tokenUserInfo, jwtSecret)
-            res.header('Access-Control-Expose-Headers', 'x-access-token')
-            res.set('x-access-token', token)
-            return res.status(200).send(tokenUserInfo)
-          })
-        })
-      })
-    })
   })
 })
 
