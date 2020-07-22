@@ -55,4 +55,13 @@ router.get('/', checkToken, (req, res) => {
   })
 })
 
+router.get('/my-ranking', checkToken, (req, res) => {
+  const userId = [req.user.userId]
+  const sql = 'SELECT * FROM user WHERE user_id = ?'
+  connection.query(sql, userId, (err, result) => {
+    if (err) throw err
+    res.status(200).send(result)
+  })
+})
+
 module.exports = router
