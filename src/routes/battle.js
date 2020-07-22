@@ -271,21 +271,45 @@ router.post('/battle-vote', checkToken, (req, res) => {
   })
 })
 
+// Battle Results
+router.get('/:groupId/:battleId/results', (req, res) => {
+  const ids = [
+    req.params.groupId,
+    req.params.battleId
+  ]
+  const sqlParticipantsList =
+    `SELECT u.username, u.user_id, a.avatar_url, p.score
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN user_battle AS ub
+      ON ub.user_id = u.user_id
+    JOIN photo AS p
+      ON p.user_id = u.user_id
+    JOIN user_group AS ug
+    WHERE ub.battle_id = 1
+      GROUP BY u.username, u.user_id, p.score
+    ORDER BY p.score DESC`
+  connection.query(sqlParticipantsList, ids, (err, participantsList) => {
+    if (err) throw err
+    res.status(200).send(participantsList)
+  })
+})
+
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
-  `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
-  FROM battle AS b
-  JOIN theme AS t
-    ON b.theme_id = t.theme_id
-  JOIN \`group\` AS gr
-    ON b.group_id = gr.group_id
-  JOIN \`status\` AS st
-    ON b.status_id = st.status_id
-  JOIN user_battle AS ub
-    ON b.battle_id = ub.battle_id
-  WHERE ub.user_id = ?`
-
+    `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
+    FROM battle AS b
+    JOIN theme AS t
+      ON b.theme_id = t.theme_id
+    JOIN \`group\` AS gr
+      ON b.group_id = gr.group_id
+    JOIN \`status\` AS st
+      ON b.status_id = st.status_id
+    JOIN user_battle AS ub
+      ON b.battle_id = ub.battle_id
+    WHERE ub.user_id = ?`
   const sqlGetBattleInformationValues = [
     req.user.userId
   ]
@@ -298,17 +322,16 @@ router.get('/my-battles', checkToken, (req, res) => {
 router.get('/my-battles/:groupId', checkToken, (req, res) => {
   const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
-    FROM battle AS b
-    JOIN theme AS t
+      FROM battle AS b
+      JOIN theme AS t
       ON b.theme_id = t.theme_id
-    JOIN \`group\` AS gr
+      JOIN \`group\` AS gr
       ON b.group_id = gr.group_id
     JOIN \`status\` AS st
       ON b.status_id = st.status_id
     JOIN user_battle AS ub
       ON b.battle_id = ub.battle_id
     WHERE ub.user_id = ? AND b.group_id = ?`
-
   const sqlGetBattleInformationValues = [
     req.user.userId,
     req.params.groupId
