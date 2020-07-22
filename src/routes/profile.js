@@ -11,7 +11,6 @@ router.get('/', checkToken, (req, res) => {
   connection.query(sqlUserInfos, valueUserId, (err, userInfos) => {
     if (err) throw err
     if (!userInfos[0]) {
-      const infos = userInfos[0]
       const sqlNumberPhotosUser = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?'
       connection.query(sqlNumberPhotosUser, valueUserId, (err, nbPhotos) => {
         if (err) throw err
@@ -22,7 +21,6 @@ router.get('/', checkToken, (req, res) => {
           connection.query(sqlNumberBattlesUser, valueUserId, (err, nbBattles) => {
             if (err) throw err
             const allInfos = {
-              infos,
               nbPhotos,
               nbGroups,
               nbBattles
