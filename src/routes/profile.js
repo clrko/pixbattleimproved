@@ -76,4 +76,12 @@ router.get('/my-ranking', checkToken, (req, res) => {
   })
 })
 
+router.get('/avatars', checkToken, (req, res) => {
+  const sql = 'SELECT * FROM avatar'
+  connection.query(sql, (err, avatars) => {
+    if (err) throw err
+    res.status(200).send(avatars)
+  })
+})
+
 module.exports = router
