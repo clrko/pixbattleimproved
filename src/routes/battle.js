@@ -305,6 +305,19 @@ router.get('/:battleId/results', (req, res) => {
   })
 })
 
+// Battle Results Photos
+router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
+  const battleId = [req.params.battleId]
+  const sqlGetPhotos =
+    `SELECT photo_id, photo_url, create_date, score, user_id
+    FROM photo
+    WHERE photo = ?`
+  connection.query(sqlGetPhotos, battleId, (err, photos) => {
+    if (err) throw err
+    res.status(200).send(photos)
+  })
+})
+
 // Battle General information
 router.get('/my-battles', checkToken, (req, res) => {
   const sqlGetBattleInformation =
