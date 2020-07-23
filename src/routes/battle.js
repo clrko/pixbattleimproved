@@ -82,30 +82,20 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
   const battleId = [
     req.params.battleId
   ]
-  const sqlBattleMembers =
-    `SELECT u.username, u.user_id, a.avatar_url 
-    FROM avatar AS a 
-    JOIN user AS u 
-      ON u.avatar_id = a.avatar_id 
-    JOIN user_battle AS ub 
-      ON ub.user_id = u.user_id 
-    WHERE ub.battle_id = ?`
-  connection.query(sqlBattleMembers, battleId, (err, battleMembers) => {
+  const sqlBattlePostStatus =
+  `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
+  FROM avatar AS a 
+  INNER JOIN user AS u 
+    ON u.avatar_id = a.avatar_id
+  INNER JOIN user_battle AS ub 
+    ON ub.user_id = u.user_id
+  LEFT JOIN photo AS p
+    ON u.user_id = p.user_id
+  WHERE ub.battle_id = ?
+  GROUP BY u.user_id;`
+  connection.query(sqlBattlePostStatus, [battleId, battleId], (err, battleMemberStatus) => {
     if (err) throw err
-    const sqlMemberStatus =
-      `SELECT u.user_id 
-        FROM user AS u 
-        JOIN photo AS p 
-          ON p.user_id = u.user_id 
-        WHERE p.battle_id = ?`
-    connection.query(sqlMemberStatus, battleId, (err, battleMemberStatus) => {
-      if (err) throw err
-      const infosParticipants = {
-        battleMembers,
-        battleMemberStatus
-      }
-      res.status(200).send(infosParticipants)
-    })
+    res.status(200).send(battleMemberStatus)
   })
 })
 
@@ -185,36 +175,23 @@ router.delete('/battle-post', checkToken, (req, res) => {
 
 // Battle Vote
 router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
-  const sqlSelectParticipants =
-    `SELECT p.photo_id, p.photo_url, p.create_date, u.username, u.user_id, a.avatar_url 
-    FROM photo AS p 
-    JOIN user AS u 
-      ON u.user_id = p.user_id 
-    JOIN avatar AS a 
-      ON a.avatar_id = u.avatar_id 
-    WHERE p.battle_id = ? 
-    GROUP BY p.photo_id`
   const valueBattleId = [
     req.params.battleId
   ]
-  connection.query(sqlSelectParticipants, valueBattleId, (err, allParticipants) => {
+  const sqlBattleVoteStatus =
+  `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
+  FROM user AS u
+  INNER JOIN avatar AS a
+      ON u.avatar_id = a.avatar_id
+  INNER JOIN user_battle AS ub 
+      ON ub.user_id = u.user_id
+  LEFT JOIN user_photo AS up
+      ON u.user_id = up.user_id
+  WHERE ub.battle_id = ?
+  GROUP BY u.user_id;`
+  connection.query(sqlBattleVoteStatus, [valueBattleId, valueBattleId], (err, allInfos) => {
     if (err) throw err
-    const sqlHasVoted =
-      `SELECT u.user_id 
-        FROM user AS u 
-        JOIN user_photo AS up 
-          ON up.user_id = u.user_id 
-        JOIN photo AS p 
-          ON p.photo_id = up.photo_id 
-        WHERE battle_id = ?`
-    connection.query(sqlHasVoted, valueBattleId, (err, allHasVoted) => {
-      if (err) throw err
-      const allInfos = {
-        allParticipants,
-        allHasVoted
-      }
-      res.status(200).send(allInfos)
-    })
+    res.status(200).send(allInfos)
   })
 })
 
