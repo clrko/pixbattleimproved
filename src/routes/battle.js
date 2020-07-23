@@ -3,6 +3,7 @@ const router = express.Router()
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
+const { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted } = require('../helper/updateBattleStatusJobs')
 
 // Battle Creation
 router.get('/battle-creation/themes', (req, res) => {
@@ -33,6 +34,9 @@ router.post('/battle-creation', checkToken, (req, res) => {
   connection.query(sql, value, (err, battleCreationResult) => {
     if (err) throw err
     const createdBattleId = battleCreationResult.insertId
+    const battleIdDeadline = { battle_id: createdBattleId, deadline: new Date(req.body.deadline) }
+    scheduleStatusUpdatePostToVote(battleIdDeadline)
+    scheduleStatusUpdateVoteToCompleted(battleIdDeadline)
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
     const insertBattleRulesValues = req.body.rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
@@ -83,7 +87,7 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
     req.params.battleId
   ]
   const sqlBattlePostStatus =
-  `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
+    `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
   FROM avatar AS a 
   INNER JOIN user AS u 
     ON u.avatar_id = a.avatar_id
@@ -179,7 +183,7 @@ router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
     req.params.battleId
   ]
   const sqlBattleVoteStatus =
-  `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
+    `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
   FROM user AS u
   INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id

@@ -50,3 +50,5 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
   }, null, true, 'Europe/Paris')
   job.start()
 }
+
+module.exports = { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted }
