@@ -57,7 +57,18 @@ router.get('/', checkToken, (req, res) => {
 
 router.get('/my-ranking', checkToken, (req, res) => {
   const userId = [req.user.userId]
-  const sql = 'SELECT * FROM user WHERE user_id = ?'
+  const sql =
+    `SELECT u.user_id, u.username, a.avatar_url, COUNT(winner_user_id) AS victories
+    FROM user AS u
+    INNER JOIN avatar AS a
+      ON u.avatar_id = a.avatar_id
+    LEFT JOIN battle AS b
+      ON u.user_id = b.winner_user_id
+    WHERE u.user_id IN 
+    (SELECT DISTINCT ugr.user_id AS contacts
+    FROM user_group AS ugr
+    WHERE ugr.group_id IN (SELECT ug.group_id FROM user_group AS ug WHERE user_id = ?))
+    GROUP BY u.user_id`
   connection.query(sql, userId, (err, result) => {
     if (err) throw err
     res.status(200).send(result)
