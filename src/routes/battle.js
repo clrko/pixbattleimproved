@@ -311,7 +311,7 @@ router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
   const sqlGetPhotos =
     `SELECT photo_id, photo_url, create_date, score, user_id
     FROM photo
-    WHERE photo = ?`
+    WHERE battle_id = ?`
   connection.query(sqlGetPhotos, battleId, (err, photos) => {
     if (err) throw err
     res.status(200).send(photos)
