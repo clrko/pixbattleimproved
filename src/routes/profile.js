@@ -68,7 +68,8 @@ router.get('/my-ranking', checkToken, (req, res) => {
     (SELECT DISTINCT ugr.user_id AS contacts
     FROM user_group AS ugr
     WHERE ugr.group_id IN (SELECT ug.group_id FROM user_group AS ug WHERE user_id = ?))
-    GROUP BY u.user_id`
+    GROUP BY u.user_id
+    ORDER BY victories DESC`
   connection.query(sql, userId, (err, result) => {
     if (err) throw err
     res.status(200).send(result)
