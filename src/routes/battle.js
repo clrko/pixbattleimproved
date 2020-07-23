@@ -184,15 +184,15 @@ router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
   ]
   const sqlBattleVoteStatus =
     `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
-  FROM user AS u
-  INNER JOIN avatar AS a
+    FROM user AS u
+    INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-  INNER JOIN user_battle AS ub 
+    INNER JOIN user_battle AS ub 
       ON ub.user_id = u.user_id
-  LEFT JOIN user_photo AS up
+    LEFT JOIN user_photo AS up
       ON u.user_id = up.user_id
-  WHERE ub.battle_id = ?
-  GROUP BY u.user_id;`
+    WHERE ub.battle_id = ?
+    GROUP BY u.user_id`
   connection.query(sqlBattleVoteStatus, [valueBattleId, valueBattleId], (err, allInfos) => {
     if (err) throw err
     res.status(200).send(allInfos)

@@ -37,6 +37,30 @@ const scheduleStatusUpdatePostToVote = (battle) => {
   job.start()
 }
 
+const updatePhotoScore = photoId => {
+  const sqlUpdate =
+    `UPDATE photo 
+      SET score = (SELECT SUM(vote)
+    FROM user_photo
+    WHERE photo_id = ?) 
+    WHERE photo_id = ?`
+  connection.query(sqlUpdate, photoId, photoId, err => {
+    if (err) return err
+  })
+}
+
+const updateBattlePhotosScores = (battleId) => {
+  const sqlSelect =
+    `SELECT photo_id
+    FROM photo
+    WHERE battle_id = ?`
+  connection.query(sqlSelect, battleId, (err, results) => {
+    if (err) return err
+    const photoIds = results.map(result => result.photo_id)
+    photoIds.forEach(updatePhotoScore)
+  })
+}
+
 const scheduleStatusUpdateVoteToCompleted = (battle) => {
   const finalDate = moment(battle.deadline).add(1, 'minute')
   const job = new CronJob(finalDate, function () {
@@ -44,6 +68,7 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
       if (err) {
         console.log(err)
       } else {
+        updateBattlePhotosScores(battle.battle_id)
         console.log(`Change battle status to completed for ${battle.battle_id}`)
       }
     })
