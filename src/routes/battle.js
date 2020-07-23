@@ -309,12 +309,33 @@ router.get('/:battleId/results', (req, res) => {
 router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
   const battleId = [req.params.battleId]
   const sqlGetPhotos =
-    `SELECT photo_id, photo_url, create_date, score, user_id
-    FROM photo
+    `SELECT u.username, a.avatar_url, p.*
+    FROM avatar AS a
+    JOIN user AS u
+      ON u.avatar_id = a.avatar_id
+    JOIN photo AS p
+      ON p.user_id = u.user_id
     WHERE battle_id = ?`
   connection.query(sqlGetPhotos, battleId, (err, photos) => {
     if (err) throw err
-    res.status(200).send(photos)
+    const sqlGetUsers =
+      `SELECT u.username, a.avatar_url, up.vote, up.photo_id
+      FROM avatar AS a
+      JOIN user AS u
+        ON u.avatar_id = a.avatar_id
+      JOIN user_photo AS up
+        ON up.user_id = u.user_id
+      JOIN photo AS p
+        ON p.photo_id = up.photo_id
+      WHERE p.battle_id = ?`
+    connection.query(sqlGetUsers, battleId, (err, users) => {
+      if (err) throw err
+      const resultsPhotos = {
+        photos,
+        users
+      }
+      res.status(200).send(resultsPhotos)
+    })
   })
 })
 
