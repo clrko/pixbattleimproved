@@ -379,7 +379,6 @@ router.get('/my-battles/:groupId/pending', (req, res) => {
   const { groupId } = req.params
   connection.query(sqlGetPendingBattleGroup, groupId, (err, battles) => {
     if (err) throw err
-    console.log('pending battles', groupId, battles)
     res.json({ pending: battles.length > 0 })
   })
 })
