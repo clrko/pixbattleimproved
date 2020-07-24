@@ -15,5 +15,11 @@ module.exports = {
   appBaseUrl: process.env.APP_BASE_URL,
   encryptAlgo: process.env.ENCRYPT_ALGO,
   encryptPassword: process.env.ENCRYPT_PASSWORD,
-  encryptIv: process.env.ENCRYPT_IV
+  encryptIv: process.env.ENCRYPT_IV,
+  votingPhase: {
+    durationUnit: process.env.VOTING_PHASE_DURATION_UNIT || 'hours',
+    durationNumber: isNaN(process.env.VOTING_PHASE_DURATION_NUM)
+      ? 24
+      : Number(process.env.VOTING_PHASE_DURATION_NUM)
+  }
 }

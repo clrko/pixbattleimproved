@@ -3,6 +3,7 @@ const router = express.Router()
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 const multer = require('multer')
+const { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted } = require('../helper/updateBattleStatusJobs')
 
 // Battle Creation
 router.get('/battle-creation/themes', (req, res) => {
@@ -22,29 +23,34 @@ router.get('/battle-creation/rules', (req, res) => {
 })
 
 router.post('/battle-creation', checkToken, (req, res) => {
-  const userId = req.user.userId
+  const { userId } = req.user
+  const { deadline, groupId, themeId, rulesId } = req.body
   const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
   const value = [
-    req.body.deadline,
-    req.body.groupId,
-    req.body.themeId,
+    deadline,
+    groupId,
+    themeId,
     userId
   ]
   connection.query(sql, value, (err, battleCreationResult) => {
     if (err) throw err
     const createdBattleId = battleCreationResult.insertId
+    const battleIdDeadline = { battle_id: createdBattleId, deadline: new Date(req.body.deadline) }
+    scheduleStatusUpdatePostToVote(battleIdDeadline)
+    scheduleStatusUpdateVoteToCompleted(battleIdDeadline)
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
-    const insertBattleRulesValues = req.body.rulesId.map(rule => [createdBattleId, rule])
+    const insertBattleRulesValues = rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
       if (err) throw err
-      const sqlUserBattle = 'INSERT INTO user_battle VALUES (?, ?)'
-      const userBattleValues = [
-        userId,
-        createdBattleId
-      ]
-      connection.query(sqlUserBattle, userBattleValues, err => {
+      const sqlGetGroupUsers = 'SELECT user_id FROM user_group WHERE group_id = ?'
+      connection.query(sqlGetGroupUsers, groupId, (err, users) => {
         if (err) throw err
-        return res.status(201).send({ battleId: createdBattleId })
+        const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
+        const userBattleValues = users.map(user => [user.user_id, createdBattleId])
+        connection.query(sqlUserBattle, [userBattleValues], err => {
+          if (err) throw err
+          return res.status(201).send({ battleId: createdBattleId })
+        })
       })
     })
   })
@@ -83,7 +89,7 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
     req.params.battleId
   ]
   const sqlBattlePostStatus =
-  `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
+    `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
   FROM avatar AS a 
   INNER JOIN user AS u 
     ON u.avatar_id = a.avatar_id
@@ -179,16 +185,16 @@ router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
     req.params.battleId
   ]
   const sqlBattleVoteStatus =
-  `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
-  FROM user AS u
-  INNER JOIN avatar AS a
+    `SELECT DISTINCT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN up.photo_id IN (SELECT p.photo_id FROM photo AS p WHERE p.battle_id = ?) THEN 1 ELSE 0 END) AS voted
+    FROM user AS u
+    INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-  INNER JOIN user_battle AS ub 
+    INNER JOIN user_battle AS ub 
       ON ub.user_id = u.user_id
-  LEFT JOIN user_photo AS up
+    LEFT JOIN user_photo AS up
       ON u.user_id = up.user_id
-  WHERE ub.battle_id = ?
-  GROUP BY u.user_id;`
+    WHERE ub.battle_id = ?
+    GROUP BY u.user_id`
   connection.query(sqlBattleVoteStatus, [valueBattleId, valueBattleId], (err, allInfos) => {
     if (err) throw err
     res.status(200).send(allInfos)
@@ -360,6 +366,21 @@ router.get('/my-battles/:groupId', checkToken, (req, res) => {
   connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues, (err, userBattleInformation) => {
     if (err) throw err
     res.status(200).send(userBattleInformation)
+  })
+})
+
+router.get('/my-battles/:groupId/pending', (req, res) => {
+  const sqlGetPendingBattleGroup =
+    `SELECT battle_id, status_id
+    FROM battle
+    WHERE group_id = ?
+    AND status_id != 3
+    `
+  const { groupId } = req.params
+  connection.query(sqlGetPendingBattleGroup, groupId, (err, battles) => {
+    if (err) throw err
+    console.log('pending battles', groupId, battles)
+    res.json({ pending: battles.length > 0 })
   })
 })
 
