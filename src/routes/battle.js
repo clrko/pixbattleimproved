@@ -23,12 +23,13 @@ router.get('/battle-creation/rules', (req, res) => {
 })
 
 router.post('/battle-creation', checkToken, (req, res) => {
-  const userId = req.user.userId
+  const { userId } = req.user
+  const { deadline, groupId, themeId, rulesId } = req.body
   const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
   const value = [
-    req.body.deadline,
-    req.body.groupId,
-    req.body.themeId,
+    deadline,
+    groupId,
+    themeId,
     userId
   ]
   connection.query(sql, value, (err, battleCreationResult) => {
@@ -38,17 +39,18 @@ router.post('/battle-creation', checkToken, (req, res) => {
     scheduleStatusUpdatePostToVote(battleIdDeadline)
     scheduleStatusUpdateVoteToCompleted(battleIdDeadline)
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
-    const insertBattleRulesValues = req.body.rulesId.map(rule => [createdBattleId, rule])
+    const insertBattleRulesValues = rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
       if (err) throw err
-      const sqlUserBattle = 'INSERT INTO user_battle VALUES (?, ?)'
-      const userBattleValues = [
-        userId,
-        createdBattleId
-      ]
-      connection.query(sqlUserBattle, userBattleValues, err => {
+      const sqlGetGroupUsers = 'SELECT user_id FROM user_group WHERE group_id = ?'
+      connection.query(sqlGetGroupUsers, groupId, (err, users) => {
         if (err) throw err
-        return res.status(201).send({ battleId: createdBattleId })
+        const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
+        const userBattleValues = users.map(user => [user.user_id, createdBattleId])
+        connection.query(sqlUserBattle, [userBattleValues], err => {
+          if (err) throw err
+          return res.status(201).send({ battleId: createdBattleId })
+        })
       })
     })
   })
