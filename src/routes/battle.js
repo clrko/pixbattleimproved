@@ -367,4 +367,19 @@ router.get('/my-battles/:groupId', checkToken, (req, res) => {
   })
 })
 
+router.get('/my-battles/:groupId/pending', (req, res) => {
+  const sqlGetPendingBattleGroup =
+    `SELECT battle_id, status_id
+    FROM battle
+    WHERE group_id = ?
+    AND status_id != 3
+    `
+  const { groupId } = req.params
+  connection.query(sqlGetPendingBattleGroup, groupId, (err, battles) => {
+    if (err) throw err
+    console.log('pending battles', groupId, battles)
+    res.json({ pending: battles.length > 0 })
+  })
+})
+
 module.exports = router
