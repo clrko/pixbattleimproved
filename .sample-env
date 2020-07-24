@@ -1,15 +1,27 @@
 PORT=
+
+# MySQL
 DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_DATABASE=
+
+# Nodemailer
 JWT_SECRET=
 MAIL_HOST=
 MAIL_PORT=
 MAIL_USER=
 MAIL_PASS=
 APP_BASE_URL=
+
+# Invitation code encryption
 ENCRYPT_ALGO='aes-256-ctr'
 ENCRYPT_PASSWORD= 32 characters
 ENCRYPT_IV= 16 characters string
 PICS_UPLOADS_PATH=/path/to/uploaded/pictures
+
+# Allows to change voting phase duration (during dev/test)
+# Change to e.g. 5 and minutes for shorter duration
+# Or leave empty to use 24 hours as default
+VOTING_PHASE_DURATION_NUM=24
+VOTING_PHASE_DURATION_UNIT=hours
