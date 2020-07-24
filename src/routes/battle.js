@@ -193,7 +193,6 @@ router.get('/battle-vote/:battleId', checkToken, (req, res) => {
   ]
   connection.query(sqlPhotosBattle, battleId, (err, photosBattleUrls) => {
     if (err) throw err
-    console.log(photosBattleUrls)
     res.status(200).send(photosBattleUrls)
   })
 })
