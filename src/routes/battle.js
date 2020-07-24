@@ -105,6 +105,23 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
   })
 })
 
+router.get('/battle-post/status-user', checkToken, (req, res) => {
+  const sql =
+    `SELECT *
+    FROM photo AS p
+    WHERE p.user_id = ?
+    AND p.battle_id IN(?)`
+  const values = [
+    req.user.userId,
+    req.query.id
+  ]
+  connection.query(sql, values, (err, result) => {
+    if (err) throw err
+    console.log('result est', result)
+    res.status(200).send(result)
+  })
+})
+
 router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
   const valueGroupId = [
@@ -216,9 +233,9 @@ router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
   ]
   connection.query(sql, values, (err, result) => {
     if (err) throw err
-    if (!result) {
+    /* if (!result) {
       res.status(200).send('nothing')
-    }
+    } */
     res.status(200).send(result)
   })
 })
