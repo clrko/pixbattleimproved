@@ -117,7 +117,6 @@ router.get('/battle-post/status-user', checkToken, (req, res) => {
   ]
   connection.query(sql, values, (err, result) => {
     if (err) throw err
-    console.log('result est', result)
     res.status(200).send(result)
   })
 })
@@ -233,9 +232,6 @@ router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
   ]
   connection.query(sql, values, (err, result) => {
     if (err) throw err
-    /* if (!result) {
-      res.status(200).send('nothing')
-    } */
     res.status(200).send(result)
   })
 })

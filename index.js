@@ -13,10 +13,6 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static(process.env.PICS_UPLOADS_PATH || 'uploads'))
 app.use(express.urlencoded({ extended: true }))
-app.get('/test', (req, res) => {
-  console.log(req.query)
-  res.sendStatus(200)
-})
 
 app.use('/auth', routes.Auth)
 app.use('/battle', routes.Battle)
