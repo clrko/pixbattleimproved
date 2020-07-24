@@ -252,18 +252,17 @@ router.post('/battle-vote', checkToken, (req, res) => {
 router.get('/:battleId/results', (req, res) => {
   const battleId = [req.params.battleId]
   const sqlParticipantsList =
-    `SELECT DISTINCT u.username, u.user_id, a.avatar_url, p.score
-    FROM avatar AS a
-    JOIN user AS u
+    `SELECT u.user_id, u.username, a.avatar_url, p.score
+    FROM user AS u
+    INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-    JOIN user_battle AS ub
+    INNER JOIN user_battle AS ub 
       ON ub.user_id = u.user_id
-    JOIN photo AS p
-      ON p.user_id = u.user_id
-    JOIN user_group AS ug
-      ON ug.user_id = u.user_id
-      WHERE p.battle_id = ?
-      ORDER BY p.score DESC`
+    LEFT JOIN photo AS p
+      ON ub.user_id = p.user_id
+    WHERE p.battle_id = ?
+    GROUP BY u.user_id, p.score
+    ORDER BY p.score DESC`
   connection.query(sqlParticipantsList, battleId, (err, participantsList) => {
     if (err) throw err
     const sqlVictoriesParticipants =
