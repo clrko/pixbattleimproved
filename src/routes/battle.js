@@ -180,6 +180,24 @@ router.delete('/battle-post', checkToken, (req, res) => {
 })
 
 // Battle Vote
+router.get('/battle-vote/:battleId', checkToken, (req, res) => {
+  const sqlPhotosBattle =
+    `SELECT * FROM photo AS p 
+    JOIN battle AS b 
+      ON b.battle_id = p.battle_id 
+    WHERE b.battle_id = ?
+      AND NOT p.user_id = ?`
+  const battleId = [
+    req.params.battleId,
+    req.user.userId
+  ]
+  connection.query(sqlPhotosBattle, battleId, (err, photosBattleUrls) => {
+    if (err) throw err
+    console.log(photosBattleUrls)
+    res.status(200).send(photosBattleUrls)
+  })
+})
+
 router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
   const valueBattleId = [
     req.params.battleId
