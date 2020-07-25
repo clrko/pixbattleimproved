@@ -54,7 +54,7 @@ router.post('/', (req, res) => {
         res.set('x-access-token', token)
         return res.status(200).send(tokenUserInfo)
       } else {
-        return res.status(401).send('The password or username is wrong')
+        return res.sendStatus(401)
       }
     })
   })

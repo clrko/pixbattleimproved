@@ -64,7 +64,7 @@ router.post('/', (req, res) => {
     }
     // Utilisateur inscrit
     if (result[0].email && result[0].username) {
-      return res.send('Tu es déjà inscrit')
+      return res.sendStatus(409)
     }
   })
 })
