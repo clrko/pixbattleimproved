@@ -6,7 +6,12 @@ const connection = require('../helper/db')
 const router = express.Router()
 
 router.get('/', checkToken, (req, res) => {
-  const sqlUserInfos = 'SELECT b.winner_user_id, count(b.winner_user_id) AS victories FROM user AS u JOIN battle AS b ON b.winner_user_id = u.user_id JOIN user_battle AS ub ON ub.user_id = u.user_id WHERE u.user_id = ? GROUP BY b.winner_user_id'
+  const sqlUserInfos =
+    `SELECT COUNT(winner_user_id) AS victories
+    FROM user AS u
+    LEFT JOIN battle AS b
+      ON u.user_id = b.winner_user_id
+    WHERE user_id = ?`
   const valueUserId = [req.user.userId]
   connection.query(sqlUserInfos, valueUserId, (err, userInfos) => {
     if (err) throw err
