@@ -3,37 +3,6 @@ const router = express.Router()
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
-const eventEmitterMail = require('../helper/eventEmitterMail')
-const { encrypt } = require('../helper/encryptionCode')
-
-// Sur la page de création du groupe
-router.post('/:groupId', checkToken, (req, res) => {
-  const emails = req.body.allEmails
-  const invitationCode = encrypt(`group${req.params.groupId}`)
-  eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
-  return res.sendStatus(200)
-})
-
-// Au moment du choix du nom du groupe
-router.put('/:groupId', checkToken, (req, res) => {
-  const sql = 'INSERT INTO user_group VALUES (?, ?)'
-  const insertValues = [
-    req.user.userId,
-    req.params.groupId
-  ]
-  connection.query(sql, insertValues, err => {
-    if (err) throw err
-    const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?'
-    const updateValues = [
-      req.body.groupName,
-      req.params.groupId
-    ]
-    connection.query(sql, updateValues, err => {
-      if (err) throw err
-      res.sendStatus(200)
-    })
-  })
-})
 
 router.delete('/:groupId', checkToken, (req, res) => {
   const sql = 'DELETE FROM `group` WHERE group_id = ?'
