@@ -122,15 +122,13 @@ router.get('/battle-post/status-user', checkToken, (req, res) => {
 })
 
 router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
-  const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
-  const valueGroupId = [
-    req.params.groupId
+  const sqlHasPosted = 'SELECT photo_url FROM photo WHERE battle_id = ? AND user_id = ?'
+  const valueBattleId = [
+    req.params.battleId,
+    req.user.userId
   ]
-  connection.query(sqlGroupName, valueGroupId, (err, result) => {
+  connection.query(sqlHasPosted, valueBattleId, (err, photos) => {
     if (err) throw err
-    const groupName = {
-      groupName: result[0].group_name
-    }
     const sqlBattleInfos =
       `SELECT t.theme_name, b.deadline, r.rule_name 
       FROM theme AS t 
@@ -146,8 +144,9 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
     ]
     connection.query(sqlBattleInfos, valueBattleId, (err, battleInfos) => {
       if (err) throw err
+      const photo = photos[0]
       const infos = {
-        groupName,
+        photoUrl: photo && photo.photo_url,
         battleInfos
       }
       res.status(200).send(infos)
