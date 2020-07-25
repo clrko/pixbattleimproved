@@ -1,5 +1,7 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
 
+const { jwtSecret } = require('../../config')
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 
@@ -88,43 +90,27 @@ router.put('/settings/informations', checkToken, (req, res) => {
   const userId = req.user.userId
   const avatarId = req.body.selectedAvatar
   const username = req.body.newUsername
-  if (avatarId && username) {
-    const valuesToUpdate = [
-      username,
-      avatarId,
-      userId
-    ]
-    const sqlToUpdate =
-      `UPDATE user
-      SET 
-        username = ?,
-        avatar_id = ?
-      WHERE user_id = ?`
-    connection.query(sqlToUpdate, valuesToUpdate, err => {
-      if (err) throw err
-      res.sendStatus(201)
-    })
-  } else if (avatarId && !username) {
-    const valuesAvatar = [
-      avatarId,
-      userId
-    ]
-    const sqlAvatar = 'UPDATE user SET avatar_id = ? WHERE user_id = ?'
-    connection.query(sqlAvatar, valuesAvatar, err => {
-      if (err) throw err
-      res.sendStatus(201)
-    })
-  } else {
-    const valuesUsername = [
-      username,
-      userId
-    ]
-    const sqlUsername = 'UPDATE user SET username = ? WHERE user_id = ?'
-    connection.query(sqlUsername, valuesUsername, err => {
-      if (err) throw err
-      res.sendStatus(201)
-    })
+  const valuesToUpdate = { avatar_id: avatarId }
+  if (username) {
+    valuesToUpdate.username = username
   }
+  const sqlToUpdate =
+    `UPDATE user
+    SET ?
+    WHERE user_id = ?`
+  connection.query(sqlToUpdate, [valuesToUpdate, userId], err => {
+    if (err) throw err
+    const tokenUserInfo = {
+      userId: req.user.userId,
+      username: username,
+      avatar: req.body.selectedAvatarUrl,
+      userEmail: req.user.userEmail
+    }
+    const token = jwt.sign(tokenUserInfo, jwtSecret)
+    res.header('Access-Control-Expose-Headers', 'x-access-token')
+    res.set('x-access-token', token)
+    return res.status(200).send(tokenUserInfo)
+  })
 })
 
 module.exports = router
