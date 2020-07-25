@@ -25,7 +25,7 @@ router.post('/', checkToken, (req, res) => {
     connection.query(sqlGroupUser, insertValues, err => {
       if (err) throw err
       const emails = req.body.emails
-      const invitationCode = encrypt(`group${req.params.groupId}`)
+      const invitationCode = encrypt(`group${groupId}`)
       eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
       res.status(201).send({ groupId })
     })
