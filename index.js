@@ -19,7 +19,7 @@ app.use('/battle', routes.Battle)
 app.use('/gallery', routes.Gallery)
 app.use('/group', routes.Group)
 app.use('/group-creation', routes.GroupCreation)
-app.use('/members', routes.Group)
+app.use('/members', routes.Members)
 app.use('/profile', routes.Profile)
 app.use('/register', routes.Register)
 
