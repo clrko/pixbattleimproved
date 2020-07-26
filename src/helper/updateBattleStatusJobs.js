@@ -1,5 +1,6 @@
 const CronJob = require('cron').CronJob
 const moment = require('moment')
+const Promise = require('bluebird')
 const connection = require('./db')
 const updateBattleStatus = require('./updateBattleStatus')
 const { votingPhase } = require('../../config')
@@ -51,12 +52,10 @@ const updatePhotoScore = photoId => {
     FROM user_photo
     WHERE photo_id = ?)
     WHERE photo_id = ?`
-  connection.query(sqlUpdate, [photoId, photoId], err => {
-    if (err) return err
-  })
+  return connection.queryAsync(sqlUpdate, [photoId, photoId])
 }
 
-const updateBattlePhotosScores = (battleId) => {
+const updateBattlePhotosScores = battleId => {
   const sqlSelect =
     `SELECT photo_id
     FROM photo
@@ -64,7 +63,23 @@ const updateBattlePhotosScores = (battleId) => {
   connection.query(sqlSelect, battleId, (err, results) => {
     if (err) return err
     const photoIds = results.map(result => result.photo_id)
-    photoIds.forEach(updatePhotoScore)
+    Promise.map(photoIds, photoId => updatePhotoScore(photoId))
+      .then(() => setBattleWinner(battleId))
+  })
+}
+
+const setBattleWinner = battleId => {
+  const updateWinner =
+    `UPDATE battle
+    SET winner_user_id = 
+      (SELECT user_id
+      FROM photo AS p
+      WHERE battle_id = ?
+      ORDER BY score DESC
+      LIMIT 1)
+  WHERE battle_id = ?`
+  connection.query(updateWinner, [battleId, battleId], err => {
+    if (err) return err
   })
 }
 
