@@ -26,10 +26,17 @@ router.post('/', checkToken, (req, res) => {
       if (err) throw err
       const emails = req.body.emails
       const invitationCode = encrypt(`group${groupId}`)
-      eventEmitterMail.emit('sendMail', { type: 'invite', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
+      eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
       res.status(201).send({ groupId })
     })
   })
+})
+
+router.get('/test', (req, res) => {
+  const emails = req.body.emails
+  const invitationCode = encrypt('group1')
+  eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: 'Rejoins le groupe de claire', invitationCode: invitationCode })
+  res.status(201).send('reussi')
 })
 
 module.exports = router
