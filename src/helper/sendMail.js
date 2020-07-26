@@ -1,17 +1,26 @@
 const transporter = require('./transporter')
-const { mailUser/* , appBaseUrl  */ } = require('../../config')
+const path = require('path')
+const { mailUser, appBaseUrl, appName } = require('../../config')
 
-const sendMail = ({ type, to, subject, invitationCode }) => {
-/*   const mailContent =
-  `
-  <p>Tu as été invité à rejoindre Pix battle</p>
-  <a href=${appBaseUrl}/invite/${invitationCode}><strong>JOUER</strong></a>
-  ` */
+const sendMail = ({ type, to, subject, invitationCode, userName }) => {
   const mailOptions = {
-    from: `"Maxime de PixBattle" <${mailUser}>`,
+    from: `"Maxime de ${appName}" <${mailUser}>`,
     bcc: to,
     subject,
-    template: type
+    template: type,
+    attachments: [{
+      filename: 'logo.svg',
+      path: path.resolve(__dirname, '../assets/logo/logo.svg'),
+      cid: 'mainLogo'
+    }],
+    context: {
+      appBaseUrl,
+      appName,
+      invitation_url: `${appBaseUrl}/invite/${invitationCode}`,
+      logo: 'cid:mainLogo',
+      mailUser,
+      userName
+    }
   }
 
   transporter.sendMail(mailOptions, (err, info) => {

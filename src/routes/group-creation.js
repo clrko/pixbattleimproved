@@ -25,8 +25,9 @@ router.post('/', checkToken, (req, res) => {
     connection.query(sqlGroupUser, insertValues, err => {
       if (err) throw err
       const emails = req.body.emails
+      const userName = req.user.username
       const invitationCode = encrypt(`group${groupId}`)
-      eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: `Rejoins le groupe de ${req.user.username}`, invitationCode: invitationCode })
+      eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: `Rejoins le groupe de ${userName}`, invitationCode, userName })
       res.status(201).send({ groupId })
     })
   })
@@ -35,7 +36,7 @@ router.post('/', checkToken, (req, res) => {
 router.get('/test', (req, res) => {
   const emails = req.body.emails
   const invitationCode = encrypt('group1')
-  eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: 'Rejoins le groupe de claire', invitationCode: invitationCode })
+  eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: 'Rejoins le groupe de claire', invitationCode: invitationCode, userName: 'claire' })
   res.status(201).send('reussi')
 })
 
