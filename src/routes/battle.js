@@ -105,6 +105,22 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
   })
 })
 
+router.get('/battle-post/status-user', checkToken, (req, res) => {
+  const sql =
+    `SELECT *
+    FROM photo AS p
+    WHERE p.user_id = ?
+    AND p.battle_id IN(?)`
+  const values = [
+    req.user.userId,
+    req.query.id
+  ]
+  connection.query(sql, values, (err, result) => {
+    if (err) throw err
+    res.status(200).send(result)
+  })
+})
+
 router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
   const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
   const valueGroupId = [
@@ -180,6 +196,23 @@ router.delete('/battle-post', checkToken, (req, res) => {
 })
 
 // Battle Vote
+router.get('/battle-vote/:battleId', checkToken, (req, res) => {
+  const sqlPhotosBattle =
+    `SELECT * FROM photo AS p 
+    JOIN battle AS b 
+      ON b.battle_id = p.battle_id 
+    WHERE b.battle_id = ?
+      AND NOT p.user_id = ?`
+  const battleId = [
+    req.params.battleId,
+    req.user.userId
+  ]
+  connection.query(sqlPhotosBattle, battleId, (err, photosBattleUrls) => {
+    if (err) throw err
+    res.status(200).send(photosBattleUrls)
+  })
+})
+
 router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
   const valueBattleId = [
     req.params.battleId
@@ -216,9 +249,6 @@ router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
   ]
   connection.query(sql, values, (err, result) => {
     if (err) throw err
-    if (!result) {
-      res.status(200).send('nothing')
-    }
     res.status(200).send(result)
   })
 })
@@ -252,18 +282,17 @@ router.post('/battle-vote', checkToken, (req, res) => {
 router.get('/:battleId/results', (req, res) => {
   const battleId = [req.params.battleId]
   const sqlParticipantsList =
-    `SELECT DISTINCT u.username, u.user_id, a.avatar_url, p.score
-    FROM avatar AS a
-    JOIN user AS u
+    `SELECT u.user_id, u.username, a.avatar_url, p.score
+    FROM user AS u
+    INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-    JOIN user_battle AS ub
+    INNER JOIN user_battle AS ub 
       ON ub.user_id = u.user_id
-    JOIN photo AS p
-      ON p.user_id = u.user_id
-    JOIN user_group AS ug
-      ON ug.user_id = u.user_id
-      WHERE p.battle_id = ?
-      ORDER BY p.score DESC`
+    LEFT JOIN photo AS p
+      ON ub.user_id = p.user_id
+    WHERE p.battle_id = ?
+    GROUP BY u.user_id, p.score
+    ORDER BY p.score DESC`
   connection.query(sqlParticipantsList, battleId, (err, participantsList) => {
     if (err) throw err
     const sqlVictoriesParticipants =
@@ -379,7 +408,6 @@ router.get('/my-battles/:groupId/pending', (req, res) => {
   const { groupId } = req.params
   connection.query(sqlGetPendingBattleGroup, groupId, (err, battles) => {
     if (err) throw err
-    console.log('pending battles', groupId, battles)
     res.json({ pending: battles.length > 0 })
   })
 })
