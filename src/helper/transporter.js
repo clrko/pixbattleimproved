@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer')
 const { mailHost, mailPort, mailUser, mailPass } = require('../../config')
+const hbs = require('./nodemailer-express-handlebars')
 
 const transporter = nodemailer.createTransport({
   host: mailHost,
@@ -10,5 +11,10 @@ const transporter = nodemailer.createTransport({
     pass: mailPass
   }
 })
+
+transporter.use('compile', hbs({
+  viewEngine: 'express-handlebars',
+  viewPath: './views'
+}))
 
 module.exports = transporter
