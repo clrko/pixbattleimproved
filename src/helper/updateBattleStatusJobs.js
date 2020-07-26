@@ -7,8 +7,8 @@ const { votingPhase } = require('../../config')
 
 const getBattlesByStatus = (statusId, cb) => {
   const sql =
-    `SELECT battle_id, deadline 
-    FROM battle 
+    `SELECT battle_id, deadline
+    FROM battle
     WHERE status_id = ?`
   connection.query(sql, statusId, (err, battles) => {
     if (err) return cb(err)
@@ -47,10 +47,10 @@ const scheduleStatusUpdatePostToVote = (battle) => {
 
 const updatePhotoScore = photoId => {
   const sqlUpdate =
-    `UPDATE photo 
+    `UPDATE photo
       SET score = (SELECT SUM(vote)
     FROM user_photo
-    WHERE photo_id = ?) 
+    WHERE photo_id = ?)
     WHERE photo_id = ?`
   return connection.queryAsync(sqlUpdate, [photoId, photoId])
 }

@@ -90,10 +90,10 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
   ]
   const sqlBattlePostStatus =
     `SELECT u.user_id, u.username, a.avatar_url, SUM(CASE WHEN p.battle_id = ? THEN 1 ELSE 0 END) AS posted
-  FROM avatar AS a 
-  INNER JOIN user AS u 
+  FROM avatar AS a
+  INNER JOIN user AS u
     ON u.avatar_id = a.avatar_id
-  INNER JOIN user_battle AS ub 
+  INNER JOIN user_battle AS ub
     ON ub.user_id = u.user_id
   LEFT JOIN photo AS p
     ON u.user_id = p.user_id
@@ -122,32 +122,31 @@ router.get('/battle-post/status-user', checkToken, (req, res) => {
 })
 
 router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
-  const sqlGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?'
-  const valueGroupId = [
-    req.params.groupId
+  const sqlHasPosted = 'SELECT photo_url FROM photo WHERE battle_id = ? AND user_id = ?'
+  const valueBattleId = [
+    req.params.battleId,
+    req.user.userId
   ]
-  connection.query(sqlGroupName, valueGroupId, (err, result) => {
+  connection.query(sqlHasPosted, valueBattleId, (err, photos) => {
     if (err) throw err
-    const groupName = {
-      groupName: result[0].group_name
-    }
     const sqlBattleInfos =
-      `SELECT t.theme_name, b.deadline, r.rule_name 
-      FROM theme AS t 
-      JOIN battle AS b 
-        ON b.theme_id = t.theme_id 
+      `SELECT t.theme_name, b.deadline, r.rule_name
+      FROM theme AS t
+      JOIN battle AS b
+        ON b.theme_id = t.theme_id
       JOIN battle_rule AS br
-        ON br.battle_id = b.battle_id 
-      JOIN rule AS r 
-        ON r.rule_id = br.rule_id 
+        ON br.battle_id = b.battle_id
+      JOIN rule AS r
+        ON r.rule_id = br.rule_id
       WHERE b.battle_id = ?`
     const valueBattleId = [
       req.params.battleId
     ]
     connection.query(sqlBattleInfos, valueBattleId, (err, battleInfos) => {
       if (err) throw err
+      const photo = photos[0]
       const infos = {
-        groupName,
+        photoUrl: photo && photo.photo_url,
         battleInfos
       }
       res.status(200).send(infos)
@@ -155,22 +154,38 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
   })
 })
 
-router.post('/battle-post/addpicture', checkToken, upload.single('file'), (req, res) => {
-  const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)'
-  const valuesInsertPhoto = [
-    req.file.filename,
-    req.user.userId,
-    req.body.battleId,
-    req.body.groupId
-  ]
-  connection.query(sqlInsertPhoto, valuesInsertPhoto, (err, photoRes) => {
-    if (err) throw err
-    const photoId = {
-      photoId: photoRes.insertId
-    }
-    res.status(201).send(photoId)
-  })
-})
+router.post(
+  '/battle-post/addpicture',
+  checkToken,
+  upload.single('file'),
+  (req, res) => {
+    const sqlExistingPhoto = 'SELECT * FROM photo WHERE user_id = ? AND battle_id = ?'
+    const valuesExistingPhoto = [
+      req.user.userId,
+      req.body.battleId
+    ]
+    connection.query(sqlExistingPhoto, valuesExistingPhoto, (err, photos) => {
+      if (err) throw err
+      if (photos.length > 0) {
+        return res.sendStatus(409)
+      }
+      const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)'
+      const valuesInsertPhoto = [
+        req.file.filename,
+        req.user.userId,
+        req.body.battleId,
+        req.body.groupId
+      ]
+      connection.query(sqlInsertPhoto, valuesInsertPhoto, (err, photoRes) => {
+        if (err) throw err
+        const photoId = {
+          photoId: photoRes.insertId
+        }
+        res.status(201).send(photoId)
+      })
+    })
+  }
+)
 
 router.put('/battle-post/:photoId', checkToken, (req, res) => {
   const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?'
@@ -198,9 +213,9 @@ router.delete('/battle-post', checkToken, (req, res) => {
 // Battle Vote
 router.get('/battle-vote/:battleId', checkToken, (req, res) => {
   const sqlPhotosBattle =
-    `SELECT * FROM photo AS p 
-    JOIN battle AS b 
-      ON b.battle_id = p.battle_id 
+    `SELECT * FROM photo AS p
+    JOIN battle AS b
+      ON b.battle_id = p.battle_id
     WHERE b.battle_id = ?
       AND NOT p.user_id = ?`
   const battleId = [
@@ -222,7 +237,7 @@ router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
     FROM user AS u
     INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-    INNER JOIN user_battle AS ub 
+    INNER JOIN user_battle AS ub
       ON ub.user_id = u.user_id
     LEFT JOIN user_photo AS up
       ON u.user_id = up.user_id
@@ -255,11 +270,11 @@ router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
 
 router.post('/battle-vote', checkToken, (req, res) => {
   const sqlPostVote =
-    `INSERT INTO user_photo 
-      (user_id, photo_id, vote) 
-    VALUES 
-      (?, ?, ?), 
-      (?, ?, ?), 
+    `INSERT INTO user_photo
+      (user_id, photo_id, vote)
+    VALUES
+      (?, ?, ?),
+      (?, ?, ?),
       (?, ?, ?)`
   const valuesPostVote = [
     req.user.userId,
@@ -286,7 +301,7 @@ router.get('/:battleId/results', (req, res) => {
     FROM user AS u
     INNER JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
-    INNER JOIN user_battle AS ub 
+    INNER JOIN user_battle AS ub
       ON ub.user_id = u.user_id
     LEFT JOIN photo AS p
       ON ub.user_id = p.user_id
