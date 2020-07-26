@@ -38,4 +38,17 @@ router.get('/my-groups', checkToken, (req, res) => {
   })
 })
 
+// Modified group name
+router.put('/update/:groupId', checkToken, (req, res) => {
+  const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?'
+  const insertValues = [
+    req.body.groupName,
+    req.params.groupId
+  ]
+  connection.query(sql, insertValues, err => {
+    if (err) throw err
+    return res.sendStatus(200)
+  })
+})
+
 module.exports = router
