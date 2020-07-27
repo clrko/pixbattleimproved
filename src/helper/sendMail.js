@@ -2,13 +2,15 @@ const transporter = require('./transporter')
 const path = require('path')
 const { mailUser, appBaseUrl, appName } = require('../../config')
 
-const sendMail = ({ type, to, subject, invitationCode, userName }) => {
+const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupName, battleId }) => {
   const getActionUrl = selectedType => {
     switch (selectedType) {
       case 'invitation':
         return `${appBaseUrl}/invite/${invitationCode}`
       case 'welcome':
         return `${appBaseUrl}/`
+      case 'battleNew':
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/post-picture`
     }
   }
 
@@ -26,6 +28,7 @@ const sendMail = ({ type, to, subject, invitationCode, userName }) => {
       appBaseUrl,
       appName,
       action_url: getActionUrl(type),
+      groupName,
       logo: 'cid:mainLogo',
       mailUser,
       userName

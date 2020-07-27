@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
+const eventEmitterMail = require('../helper/eventEmitterMail')
 const multer = require('multer')
 const { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted } = require('../helper/updateBattleStatusJobs')
 
@@ -23,7 +24,7 @@ router.get('/battle-creation/rules', (req, res) => {
 })
 
 router.post('/battle-creation', checkToken, (req, res) => {
-  const { userId } = req.user
+  const { userId, username } = req.user
   const { deadline, groupId, themeId, rulesId } = req.body
   const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
   const value = [
@@ -42,13 +43,16 @@ router.post('/battle-creation', checkToken, (req, res) => {
     const insertBattleRulesValues = rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
       if (err) throw err
-      const sqlGetGroupUsers = 'SELECT user_id FROM user_group WHERE group_id = ?'
-      connection.query(sqlGetGroupUsers, groupId, (err, users) => {
+      const sqlGetGroupUsers = 'SELECT ug.user_id, u.email, g.group_name FROM user_group AS ug JOIN user AS u ON ug.user_id = u.user_id JOIN `group` As g ON g.group_id = ? WHERE ug.group_id = ?'
+      connection.query(sqlGetGroupUsers, [groupId, groupId], (err, users) => {
         if (err) throw err
         const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
         const userBattleValues = users.map(user => [user.user_id, createdBattleId])
+        const userEmails = users.map(user => user.email)
+        const groupName = users[0].group_name
         connection.query(sqlUserBattle, [userBattleValues], err => {
           if (err) throw err
+          eventEmitterMail.emit('sendMail', { type: 'battleNew', to: userEmails, subject: 'Une nouvelle battle a été créée', userName: username, groupId: groupId, groupName: groupName, battleId: createdBattleId })
           return res.status(201).send({ battleId: createdBattleId })
         })
       })
