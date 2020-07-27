@@ -3,6 +3,15 @@ const path = require('path')
 const { mailUser, appBaseUrl, appName } = require('../../config')
 
 const sendMail = ({ type, to, subject, invitationCode, userName }) => {
+  const getActionUrl = selectedType => {
+    switch (selectedType) {
+      case 'invitation':
+        return `${appBaseUrl}/invite/${invitationCode}`
+      case 'welcome':
+        return `${appBaseUrl}/`
+    }
+  }
+
   const mailOptions = {
     from: `"Maxime de ${appName}" <${mailUser}>`,
     bcc: to,
@@ -16,7 +25,7 @@ const sendMail = ({ type, to, subject, invitationCode, userName }) => {
     context: {
       appBaseUrl,
       appName,
-      invitation_url: `${appBaseUrl}/invite/${invitationCode}`,
+      action_url: getActionUrl(type),
       logo: 'cid:mainLogo',
       mailUser,
       userName

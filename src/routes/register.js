@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 
 const connection = require('../helper/db')
 const { jwtSecret } = require('../../config')
+const eventEmitterMail = require('../helper/eventEmitterMail')
 const { decrypt } = require('../helper/encryptionCode')
 
 const router = express.Router()
@@ -56,6 +57,7 @@ router.post('/', (req, res) => {
               const token = jwt.sign(tokenUserInfo, jwtSecret)
               res.header('Access-Control-Expose-Headers', 'x-access-token')
               res.set('x-access-token', token)
+              eventEmitterMail.emit('sendMail', { type: 'welcome', to: result[0].email, subject: `Bienvenue chez PxBattle ${result[0].username}`, userName: result[0].username })
               return res.status(200).send(tokenUserInfo)
             })
           })

@@ -33,11 +33,4 @@ router.post('/', checkToken, (req, res) => {
   })
 })
 
-router.get('/test', (req, res) => {
-  const emails = req.body.emails
-  const invitationCode = encrypt('group1')
-  eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: 'Rejoins le groupe de claire', invitationCode: invitationCode, userName: 'claire' })
-  res.status(201).send('reussi')
-})
-
 module.exports = router
