@@ -27,32 +27,27 @@ getBattlesByStatus(2, (err, battles) => {
   battles.forEach(scheduleStatusUpdateVoteToCompleted)
 })
 
-const getUserBattleData = battleId => {
+const getUserBattleData = async battleId => {
   const sql =
   `SELECT u.username, u.email
   FROM user AS u 
   JOIN user_battle AS ub 
   ON u.user_id = ub.user_id 
   WHERE ub.battle_id = ?`
-  connection.query(sql, battleId, (err, userBattleData) => {
-    if (err) return err
-    return userBattleData
-  })
+  return connection.queryAsync(sql, battleId)
 }
 
-const getBattleInfos = battleId => {
+const getBattleInfos = async battleId => {
   const sql =
-  `SELECT g.group_id, g.group_name, t.theme_name, 
+  `SELECT g.group_id, g.group_name, t.theme_name 
   FROM battle AS b 
   JOIN theme AS t
   ON b.theme_id = t.theme_id
   JOIN \`group\` AS g
   ON b.group_id = g.group_id
   WHERE b.battle_id = ?`
-  connection.query(sql, battleId, (err, battleInfos) => {
-    if (err) return err
-    return battleInfos[0]
-  })
+  return connection.queryAsync(sql, battleId)
+    .then(battleInfos => battleInfos[0])
 }
 
 const scheduleStatusUpdatePostToVote = (battle) => {
