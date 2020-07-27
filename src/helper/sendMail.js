@@ -8,9 +8,15 @@ const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupN
       case 'invitation':
         return `${appBaseUrl}/invite/${invitationCode}`
       case 'welcome':
-        return `${appBaseUrl}/`
+        return `${appBaseUrl}`
       case 'battleNew':
         return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/post-picture`
+      case 'battlePostToVote':
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/vote`
+      case 'battleVoteToResults':
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/results`
+      default:
+        return `${appBaseUrl}`
     }
   }
 

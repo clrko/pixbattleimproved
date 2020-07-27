@@ -43,16 +43,15 @@ router.post('/battle-creation', checkToken, (req, res) => {
     const insertBattleRulesValues = rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
       if (err) throw err
-      const sqlGetGroupUsers = 'SELECT ug.user_id, u.email, g.group_name FROM user_group AS ug JOIN user AS u ON ug.user_id = u.user_id JOIN `group` As g ON g.group_id = ? WHERE ug.group_id = ?'
+      const sqlGetGroupUsers = 'SELECT ug.user_id, u.username, u.email, g.group_name FROM user_group AS ug JOIN user AS u ON ug.user_id = u.user_id JOIN `group` As g ON g.group_id = ? WHERE ug.group_id = ?'
       connection.query(sqlGetGroupUsers, [groupId, groupId], (err, users) => {
         if (err) throw err
         const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
         const userBattleValues = users.map(user => [user.user_id, createdBattleId])
-        const userEmails = users.map(user => user.email)
         const groupName = users[0].group_name
         connection.query(sqlUserBattle, [userBattleValues], err => {
           if (err) throw err
-          eventEmitterMail.emit('sendMail', { type: 'battleNew', to: userEmails, subject: 'Une nouvelle battle a été créée', userName: username, groupId: groupId, groupName: groupName, battleId: createdBattleId })
+          users.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battleNew', to: user.email, subject: `${username} a créé une nouvelle battle`, userName: user.username, groupId, groupName, battleId: createdBattleId }))
           return res.status(201).send({ battleId: createdBattleId })
         })
       })
