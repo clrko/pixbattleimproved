@@ -63,12 +63,12 @@ const scheduleStatusUpdatePostToVote = (battle) => {
   }
   console.log(`Scheduling update to VOTE for battle ${battle.battle_id} @ ${battle.deadline}`)
   const job = new CronJob(battle.deadline, function () {
-    updateBattleStatus(battle.battle_id, 2, err => {
+    updateBattleStatus(battle.battle_id, 2, async err => {
       if (err) {
         console.log(err)
       } else {
-        const userBattleData = getUserBattleData(battle.battle_id)
-        const { group_id: groupId, group_name: groupName, theme_name: themeName } = getBattleInfos(battle.battle_id)
+        const userBattleData = await getUserBattleData(battle.battle_id)
+        const { group_id: groupId, group_name: groupName, theme_name: themeName } = await getBattleInfos(battle.battle_id)
         userBattleData.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battlePostToVote', to: user.email, subject: 'Les votes sont ouverts!', userName: user.username, groupId, groupName, battleId: battle.battle_id, themeName }))
         console.log(`Change battle status to vote for ${battle.battle_id}`)
       }
@@ -125,13 +125,13 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
   }
   console.log(`Scheduling update to COMPLETED for battle ${battle.battle_id} @ ${finalDate}`)
   const job = new CronJob(finalDate, function () {
-    updateBattleStatus(battle.battle_id, 3, err => {
+    updateBattleStatus(battle.battle_id, 3, async err => {
       if (err) {
         console.log(err)
       } else {
         updateBattlePhotosScores(battle.battle_id)
-        const userBattleData = getUserBattleData(battle.battle_id)
-        const { group_id: groupId, group_name: groupName, theme_name: themeName } = getBattleInfos(battle.battle_id)
+        const userBattleData = await getUserBattleData(battle.battle_id)
+        const { group_id: groupId, group_name: groupName, theme_name: themeName } = await getBattleInfos(battle.battle_id)
         userBattleData.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battleVoteToResults', to: user.email, subject: 'Les resultats sont disponibles', userName: user.username, groupId, groupName, battleId: battle.battle_id, themeName }))
         console.log(`Change battle status to completed for ${battle.battle_id}`)
       }
