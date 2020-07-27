@@ -1,5 +1,4 @@
 const transporter = require('./transporter')
-// const path = require('path')
 const { mailUser, appBaseUrl, appName, serverBaseUrl } = require('../../config')
 
 const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupName, battleId }) => {
@@ -25,12 +24,6 @@ const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupN
     bcc: to,
     subject,
     template: type,
-    attachments: [{
-      filename: 'logo.svg',
-      // path: path.resolve(__dirname, `${serverBaseUrl}/logo/logo.svg`),
-      path: `${serverBaseUrl}/logo/logo.svg`,
-      cid: 'mainLogo'
-    }],
     context: {
       appBaseUrl,
       appName,
