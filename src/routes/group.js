@@ -3,6 +3,8 @@ const router = express.Router()
 
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
+const eventEmitterMail = require('../helper/eventEmitterMail')
+const { encrypt } = require('../helper/encryptionCode')
 
 router.delete('/:groupId', checkToken, (req, res) => {
   const sql = 'DELETE FROM `group` WHERE group_id = ?'
@@ -49,6 +51,16 @@ router.put('/update/:groupId', checkToken, (req, res) => {
     if (err) throw err
     return res.sendStatus(200)
   })
+})
+
+// Add group participants
+router.post('/add-members/:groupId', checkToken, (req, res) => {
+  const emails = req.body.allEmails
+  const userName = req.user.username
+  const groupId = req.params.groupId
+  const invitationCode = encrypt(`group${groupId}`)
+  eventEmitterMail.emit('sendMail', { type: 'invitation', to: emails, subject: `Rejoins le groupe de ${userName}`, invitationCode, userName })
+  return res.sendStatus(200)
 })
 
 module.exports = router
