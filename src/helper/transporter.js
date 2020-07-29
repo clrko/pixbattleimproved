@@ -6,6 +6,7 @@ const hbs = require('nodemailer-express-handlebars')
 const transporter = nodemailer.createTransport({
   host: mailHost,
   port: mailPort,
+  pool: true,
   secure: true, // true for 465, false for other ports
   auth: {
     user: mailUser,
