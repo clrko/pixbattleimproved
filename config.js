@@ -18,6 +18,7 @@ module.exports = {
   encryptAlgo: process.env.ENCRYPT_ALGO,
   encryptPassword: process.env.ENCRYPT_PASSWORD,
   encryptIv: process.env.ENCRYPT_IV,
+  reactBuild: process.env.REACT_BUILD_PATH,
   votingPhase: {
     durationUnit: process.env.VOTING_PHASE_DURATION_UNIT || 'hours',
     durationNumber: isNaN(process.env.VOTING_PHASE_DURATION_NUM)
