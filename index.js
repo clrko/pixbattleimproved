@@ -1,9 +1,10 @@
 const cors = require('cors')
 const express = require('express')
 const morgan = require('morgan')
+const path = require('path')
 require('./src/helper/updateBattleStatusJobs')
 
-const { port } = require('./config')
+const { port, reactBuild } = require('./config')
 const routes = require('./src/routes/index')
 
 const app = express()
@@ -25,6 +26,16 @@ app.use('/group-creation', routes.GroupCreation)
 app.use('/members', routes.Members)
 app.use('/profile', routes.Profile)
 app.use('/register', routes.Register)
+
+if (reactBuild) {
+  const reactBuildPath = reactBuild.startsWith('/')
+    ? reactBuild
+    : path.resolve(__dirname, reactBuild)
+  app.use(express.static(reactBuildPath))
+  app.get('/*', (req, res) => {
+    res.sendFile(path.join(reactBuildPath, 'index.html'))
+  })
+}
 
 app.listen(port, () => {
   console.log(`server is listening on port ${port}`)
