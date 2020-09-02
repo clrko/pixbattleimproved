@@ -25,5 +25,8 @@ module.exports = {
       ? 24
       : Number(process.env.VOTING_PHASE_DURATION_NUM)
   },
-  checkStatusKey: process.env.CHECK_STATUS_KEY || 'status'
+  checkStatusKey: process.env.CHECK_STATUS_KEY || 'status',
+  criticalErrorEmails: process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS
+    ? process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS.split(',')
+    : []
 }

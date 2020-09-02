@@ -2,6 +2,7 @@ const CronJob = require('cron').CronJob
 const moment = require('moment')
 const Promise = require('bluebird')
 const connection = require('./db')
+const logger = require('./logger')
 const eventEmitterMail = require('./eventEmitterMail')
 const updateBattleStatus = require('./updateBattleStatus')
 const { votingPhase } = require('../../config')
@@ -30,17 +31,17 @@ getBattlesByStatus(2, (err, battles) => {
 const getUserBattleData = async battleId => {
   const sql =
   `SELECT u.username, u.email
-  FROM user AS u 
-  JOIN user_battle AS ub 
-  ON u.user_id = ub.user_id 
+  FROM user AS u
+  JOIN user_battle AS ub
+  ON u.user_id = ub.user_id
   WHERE ub.battle_id = ?`
   return connection.queryAsync(sql, battleId)
 }
 
 const getBattleInfos = async battleId => {
   const sql =
-  `SELECT g.group_id, g.group_name, t.theme_name 
-  FROM battle AS b 
+  `SELECT g.group_id, g.group_name, t.theme_name
+  FROM battle AS b
   JOIN theme AS t
   ON b.theme_id = t.theme_id
   JOIN \`group\` AS g
@@ -53,19 +54,19 @@ const getBattleInfos = async battleId => {
 const scheduleStatusUpdatePostToVote = (battle) => {
   const isPast = moment().isAfter(moment(battle.deadline))
   if (isPast) {
-    console.warn(`Battle ${battle.battle_id} has deadline in the past: ${battle.deadline}`)
+    logger.warn(`Battle ${battle.battle_id} has deadline in the past: ${battle.deadline}`)
     return
   }
-  console.log(`Scheduling update to VOTE for battle ${battle.battle_id} @ ${battle.deadline}`)
+  logger.info(`Scheduling update to VOTE for battle ${battle.battle_id} @ ${battle.deadline}`)
   const job = new CronJob(battle.deadline, function () {
     updateBattleStatus(battle.battle_id, 2, async err => {
       if (err) {
-        console.log(err)
+        logger.error(err)
       } else {
         const userBattleData = await getUserBattleData(battle.battle_id)
         const { group_id: groupId, group_name: groupName, theme_name: themeName } = await getBattleInfos(battle.battle_id)
         userBattleData.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battlePostToVote', to: user.email, subject: 'Les votes sont ouverts!', userName: user.username, groupId, groupName, battleId: battle.battle_id, themeName }))
-        console.log(`Change battle status to vote for ${battle.battle_id}`)
+        logger.info(`Change battle status to vote for ${battle.battle_id}`)
       }
     })
   }, null, true, 'Europe/Paris')
@@ -98,7 +99,7 @@ const updateBattlePhotosScores = battleId => {
 const setBattleWinner = battleId => {
   const updateWinner =
     `UPDATE battle
-    SET winner_user_id = 
+    SET winner_user_id =
       (SELECT user_id
       FROM photo AS p
       WHERE battle_id = ?
@@ -115,20 +116,20 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
   const finalDate = moment(battle.deadline).add(durationNumber, durationUnit)
   const isPast = moment().isAfter(moment(finalDate))
   if (isPast) {
-    console.warn(`Battle ${battle.battle_id} has end of voting phase in the past: ${finalDate}`)
+    logger.warn(`Battle ${battle.battle_id} has end of voting phase in the past: ${finalDate}`)
     return
   }
-  console.log(`Scheduling update to COMPLETED for battle ${battle.battle_id} @ ${finalDate}`)
+  logger.info(`Scheduling update to COMPLETED for battle ${battle.battle_id} @ ${finalDate}`)
   const job = new CronJob(finalDate, function () {
     updateBattleStatus(battle.battle_id, 3, async err => {
       if (err) {
-        console.log(err)
+        logger.error(err)
       } else {
         updateBattlePhotosScores(battle.battle_id)
         const userBattleData = await getUserBattleData(battle.battle_id)
         const { group_id: groupId, group_name: groupName, theme_name: themeName } = await getBattleInfos(battle.battle_id)
         userBattleData.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battleVoteToResults', to: user.email, subject: 'Les resultats sont disponibles', userName: user.username, groupId, groupName, battleId: battle.battle_id, themeName }))
-        console.log(`Change battle status to completed for ${battle.battle_id}`)
+        logger.info(`Change battle status to completed for ${battle.battle_id}`)
       }
     })
   }, null, true, 'Europe/Paris')
