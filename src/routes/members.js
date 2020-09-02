@@ -4,9 +4,9 @@ const router = express.Router()
 const checkToken = require('../helper/checkToken')
 const connection = require('../helper/db')
 
-router.get('/group/:groupId', checkToken, (req, res) => {
+router.get('/group/:groupId', checkToken, (req, res, next) => {
   const sqlGetListMembers =
-  `SELECT u.user_id, u.username, u.email, a.avatar_url 
+  `SELECT u.user_id, u.username, u.email, a.avatar_url
   FROM user AS u
   JOIN avatar AS a
     ON u.avatar_id = a.avatar_id
@@ -14,21 +14,21 @@ router.get('/group/:groupId', checkToken, (req, res) => {
     ON u.user_id = ug.user_id
   WHERE ug.group_id = ?`
   connection.query(sqlGetListMembers, req.params.groupId, (err, listMembers) => {
-    if (err) throw err
+    if (err) return next(err)
     return res.status(200).send(listMembers)
   })
 })
 
-router.delete('/:userId/group/:groupId', checkToken, (req, res) => {
+router.delete('/:userId/group/:groupId', checkToken, (req, res, next) => {
   const sqlDeleteMember = 'DELETE FROM user_group WHERE group_id = ? AND user_id = ?'
   const deleteValues = [
     req.params.groupId,
     req.params.userId
   ]
   connection.query(sqlDeleteMember, deleteValues, err => {
-    if (err) throw err
+    if (err) return next(err)
     const sqlGetListMembers =
-    `SELECT u.user_id, u.username, u.email, a.avatar_url 
+    `SELECT u.user_id, u.username, u.email, a.avatar_url
     FROM user AS u
     JOIN avatar AS a
       ON u.avatar_id = a.avatar_id
@@ -36,7 +36,7 @@ router.delete('/:userId/group/:groupId', checkToken, (req, res) => {
       ON u.user_id = ug.user_id
     WHERE ug.group_id = ?`
     connection.query(sqlGetListMembers, req.params.groupId, (err, listMembers) => {
-      if (err) throw err
+      if (err) return next(err)
       return res.status(200).send(listMembers)
     })
   })

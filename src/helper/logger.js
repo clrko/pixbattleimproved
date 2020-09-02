@@ -23,7 +23,8 @@ const logger = createLogger({
         format.colorize(),
         myFormat
       )
-    })
+    }),
+    new EmailTransport({ emails: criticalErrorEmails })
   ]
 })
 
