@@ -2,6 +2,7 @@ const cors = require('cors')
 const express = require('express')
 const morgan = require('morgan')
 const path = require('path')
+const logger = require('./src/helper/logger')
 require('./src/helper/updateBattleStatusJobs')
 
 const { port, reactBuild } = require('./config')
@@ -38,6 +39,10 @@ if (reactBuild) {
   })
 }
 
-app.listen(port, () => {
-  console.log(`server is listening on port ${port}`)
+app.listen(port, (err) => {
+  if (err) {
+    logger.error(`[STARTUP] Failed to start listening: ${err.message}`)
+  } else {
+    logger.info(`[STARTUP] Server is listening on port ${port}`)
+  }
 })

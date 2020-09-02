@@ -33,3 +33,6 @@ VOTING_PHASE_DURATION_UNIT=hours
 
 # A key to be provided as a param to the /status route
 CHECK_STATUS_KEY=longRandomKey123
+
+# Recipients for the server error email
+CRITICAL_ERROR_EMAIL_RECIPIENTS=foo@example.com,bar@example.com
