@@ -3,6 +3,7 @@ const express = require('express')
 const morgan = require('morgan')
 const path = require('path')
 const logger = require('./src/helper/logger')
+const errorHandler = require('./src/helper/errorHandler')
 require('./src/helper/updateBattleStatusJobs')
 
 const { port, reactBuild } = require('./config')
@@ -38,6 +39,9 @@ if (reactBuild) {
     res.sendFile(path.join(reactBuildPath, 'index.html'))
   })
 }
+
+// Global error handler
+app.use(errorHandler)
 
 app.listen(port, (err) => {
   if (err) {

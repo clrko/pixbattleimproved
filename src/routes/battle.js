@@ -7,23 +7,23 @@ const multer = require('multer')
 const { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted } = require('../helper/updateBattleStatusJobs')
 
 // Battle Creation
-router.get('/battle-creation/themes', (req, res) => {
+router.get('/battle-creation/themes', (req, res, next) => {
   const sql = 'SELECT * FROM theme ORDER BY RAND() LIMIT 10;'
   connection.query(sql, (err, themeList) => {
-    if (err) throw err
+    if (err) return next(err)
     return res.status(201).send(themeList)
   })
 })
 
-router.get('/battle-creation/rules', (req, res) => {
+router.get('/battle-creation/rules', (req, res, next) => {
   const sql = 'SELECT * FROM rule;'
   connection.query(sql, (err, ruleList) => {
-    if (err) throw err
+    if (err) return next(err)
     return res.status(201).send(ruleList)
   })
 })
 
-router.post('/battle-creation', checkToken, (req, res) => {
+router.post('/battle-creation', checkToken, (req, res, next) => {
   const { userId, username } = req.user
   const { deadline, groupId, themeId, rulesId } = req.body
   const sql = 'INSERT INTO battle (deadline, group_id, theme_id, admin_user_id, status_id) VALUES (?, ?, ?, ?, 1)'
@@ -34,7 +34,7 @@ router.post('/battle-creation', checkToken, (req, res) => {
     userId
   ]
   connection.query(sql, value, (err, battleCreationResult) => {
-    if (err) throw err
+    if (err) return next(err)
     const createdBattleId = battleCreationResult.insertId
     const battleIdDeadline = { battle_id: createdBattleId, deadline: new Date(req.body.deadline) }
     scheduleStatusUpdatePostToVote(battleIdDeadline)
@@ -42,15 +42,15 @@ router.post('/battle-creation', checkToken, (req, res) => {
     const sqlBattleRule = 'INSERT INTO battle_rule VALUES ?'
     const insertBattleRulesValues = rulesId.map(rule => [createdBattleId, rule])
     connection.query(sqlBattleRule, [insertBattleRulesValues], err => {
-      if (err) throw err
+      if (err) return next(err)
       const sqlGetGroupUsers = 'SELECT ug.user_id, u.username, u.email, g.group_name FROM user_group AS ug JOIN user AS u ON ug.user_id = u.user_id JOIN `group` As g ON g.group_id = ? WHERE ug.group_id = ?'
       connection.query(sqlGetGroupUsers, [groupId, groupId], (err, users) => {
-        if (err) throw err
+        if (err) return next(err)
         const sqlUserBattle = 'INSERT INTO user_battle VALUES ?'
         const userBattleValues = users.map(user => [user.user_id, createdBattleId])
         const groupName = users[0].group_name
         connection.query(sqlUserBattle, [userBattleValues], err => {
-          if (err) throw err
+          if (err) return next(err)
           users.forEach(user => eventEmitterMail.emit('sendMail', { type: 'battleNew', to: user.email, subject: `${username} a créé une nouvelle battle`, userName: user.username, groupId, groupName, battleId: createdBattleId }))
           return res.status(201).send({ battleId: createdBattleId })
         })
@@ -87,7 +87,7 @@ const upload = multer({
   fileFilter: fileFilter
 })
 
-router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
+router.get('/battle-post/:battleId/members', checkToken, (req, res, next) => {
   const battleId = [
     req.params.battleId
   ]
@@ -103,12 +103,12 @@ router.get('/battle-post/:battleId/members', checkToken, (req, res) => {
   WHERE ub.battle_id = ?
   GROUP BY u.user_id;`
   connection.query(sqlBattlePostStatus, [battleId, battleId], (err, battleMemberStatus) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(battleMemberStatus)
   })
 })
 
-router.get('/battle-post/status-user', checkToken, (req, res) => {
+router.get('/battle-post/status-user', checkToken, (req, res, next) => {
   const sql =
     `SELECT *
     FROM photo AS p
@@ -119,19 +119,19 @@ router.get('/battle-post/status-user', checkToken, (req, res) => {
     req.query.id
   ]
   connection.query(sql, values, (err, result) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(result)
   })
 })
 
-router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
+router.get('/battle-post/:groupId/:battleId', checkToken, (req, res, next) => {
   const sqlHasPosted = 'SELECT photo_url FROM photo WHERE battle_id = ? AND user_id = ?'
   const valueBattleId = [
     req.params.battleId,
     req.user.userId
   ]
   connection.query(sqlHasPosted, valueBattleId, (err, photos) => {
-    if (err) throw err
+    if (err) return next(err)
     const sqlBattleInfos =
       `SELECT t.theme_name, b.deadline, r.rule_name
       FROM theme AS t
@@ -146,7 +146,7 @@ router.get('/battle-post/:groupId/:battleId', checkToken, (req, res) => {
       req.params.battleId
     ]
     connection.query(sqlBattleInfos, valueBattleId, (err, battleInfos) => {
-      if (err) throw err
+      if (err) return next(err)
       const photo = photos[0]
       const infos = {
         photoUrl: photo && photo.photo_url,
@@ -161,14 +161,14 @@ router.post(
   '/battle-post/addpicture',
   checkToken,
   upload.single('file'),
-  (req, res) => {
+  (req, res, next) => {
     const sqlExistingPhoto = 'SELECT * FROM photo WHERE user_id = ? AND battle_id = ?'
     const valuesExistingPhoto = [
       req.user.userId,
       req.body.battleId
     ]
     connection.query(sqlExistingPhoto, valuesExistingPhoto, (err, photos) => {
-      if (err) throw err
+      if (err) return next(err)
       if (photos.length > 0) {
         return res.sendStatus(409)
       }
@@ -180,7 +180,7 @@ router.post(
         req.body.groupId
       ]
       connection.query(sqlInsertPhoto, valuesInsertPhoto, (err, photoRes) => {
-        if (err) throw err
+        if (err) return next(err)
         const photoId = {
           photoId: photoRes.insertId
         }
@@ -190,31 +190,31 @@ router.post(
   }
 )
 
-router.put('/battle-post/:photoId', checkToken, (req, res) => {
+router.put('/battle-post/:photoId', checkToken, (req, res, next) => {
   const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?'
   const valuesUpdatePhoto = [
     req.body.photoUrl,
     req.params.photoId
   ]
   connection.query(sqlUpdatePhoto, valuesUpdatePhoto, err => {
-    if (err) throw err
+    if (err) return next(err)
     res.sendStatus(200)
   })
 })
 
-router.delete('/battle-post', checkToken, (req, res) => {
+router.delete('/battle-post', checkToken, (req, res, next) => {
   const sqlDeletePhoto = 'DELETE FROM photo WHERE photo_id = ?'
   const valueDeletePhoto = [
     req.body.photoId
   ]
   connection.query(sqlDeletePhoto, valueDeletePhoto, err => {
-    if (err) throw err
+    if (err) return next(err)
     res.sendStatus(200)
   })
 })
 
 // Battle Vote
-router.get('/battle-vote/:battleId', checkToken, (req, res) => {
+router.get('/battle-vote/:battleId', checkToken, (req, res, next) => {
   const sqlPhotosBattle =
     `SELECT * FROM photo AS p
     JOIN battle AS b
@@ -226,12 +226,12 @@ router.get('/battle-vote/:battleId', checkToken, (req, res) => {
     req.user.userId
   ]
   connection.query(sqlPhotosBattle, battleId, (err, photosBattleUrls) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(photosBattleUrls)
   })
 })
 
-router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
+router.get('/battle-vote/:battleId/members', checkToken, (req, res, next) => {
   const valueBattleId = [
     req.params.battleId
   ]
@@ -247,13 +247,13 @@ router.get('/battle-vote/:battleId/members', checkToken, (req, res) => {
     WHERE ub.battle_id = ?
     GROUP BY u.user_id`
   connection.query(sqlBattleVoteStatus, [valueBattleId, valueBattleId], (err, allInfos) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(allInfos)
   })
 })
 
 // envoie le status du current user
-router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
+router.get('/battle-vote/:battleId/status-user', checkToken, (req, res, next) => {
   const sql =
     `SELECT p.photo_id, p.photo_url, up.vote
     FROM user_photo AS up
@@ -266,12 +266,12 @@ router.get('/battle-vote/:battleId/status-user', checkToken, (req, res) => {
     req.params.battleId
   ]
   connection.query(sql, values, (err, result) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(result)
   })
 })
 
-router.post('/battle-vote', checkToken, (req, res) => {
+router.post('/battle-vote', checkToken, (req, res, next) => {
   const sqlPostVote =
     `INSERT INTO user_photo
       (user_id, photo_id, vote)
@@ -291,13 +291,13 @@ router.post('/battle-vote', checkToken, (req, res) => {
     req.body.vote3
   ]
   connection.query(sqlPostVote, valuesPostVote, err => {
-    if (err) throw err
+    if (err) return next(err)
     res.sendStatus(201)
   })
 })
 
 // Battle Results
-router.get('/:battleId/results', (req, res) => {
+router.get('/:battleId/results', (req, res, next) => {
   const battleId = [req.params.battleId]
   const sqlParticipantsList =
     `SELECT u.user_id, u.username, a.avatar_url, p.score
@@ -312,7 +312,7 @@ router.get('/:battleId/results', (req, res) => {
     GROUP BY u.user_id, p.score
     ORDER BY p.score DESC`
   connection.query(sqlParticipantsList, battleId, (err, participantsList) => {
-    if (err) throw err
+    if (err) return next(err)
     const sqlVictoriesParticipants =
       `SELECT b.winner_user_id, COUNT(b.winner_user_id) AS victories
       FROM user AS u
@@ -325,7 +325,7 @@ router.get('/:battleId/results', (req, res) => {
       WHERE ba.battle_id = ?
       GROUP BY b.winner_user_id`
     connection.query(sqlVictoriesParticipants, battleId, (err, victoriesParticipants) => {
-      if (err) throw err
+      if (err) return next(err)
       const infosResultsParticipants = {
         participantsList,
         victoriesParticipants
@@ -336,7 +336,7 @@ router.get('/:battleId/results', (req, res) => {
 })
 
 // Battle Results Photos
-router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
+router.get('/battle-results/:battleId/photos', checkToken, (req, res, next) => {
   const battleId = [req.params.battleId]
   const sqlGetPhotos =
     `SELECT u.username, a.avatar_url, p.*
@@ -347,7 +347,7 @@ router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
       ON p.user_id = u.user_id
     WHERE battle_id = ?`
   connection.query(sqlGetPhotos, battleId, (err, photos) => {
-    if (err) throw err
+    if (err) return next(err)
     const sqlGetUsers =
       `SELECT u.username, a.avatar_url, up.vote, up.photo_id
       FROM avatar AS a
@@ -359,7 +359,7 @@ router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
         ON p.photo_id = up.photo_id
       WHERE p.battle_id = ?`
     connection.query(sqlGetUsers, battleId, (err, users) => {
-      if (err) throw err
+      if (err) return next(err)
       const resultsPhotos = {
         photos,
         users
@@ -370,7 +370,7 @@ router.get('/battle-results/:battleId/photos', checkToken, (req, res) => {
 })
 
 // Battle General information
-router.get('/my-battles', checkToken, (req, res) => {
+router.get('/my-battles', checkToken, (req, res, next) => {
   const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
   FROM battle AS b
@@ -387,12 +387,12 @@ router.get('/my-battles', checkToken, (req, res) => {
     req.user.userId
   ]
   connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues, (err, userBattleInformation) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(userBattleInformation)
   })
 })
 
-router.get('/my-battles/:groupId', checkToken, (req, res) => {
+router.get('/my-battles/:groupId', checkToken, (req, res, next) => {
   const sqlGetBattleInformation =
     `SELECT b.battle_id, t.theme_name, b.deadline, b.create_date, b.admin_user_id, gr.group_name, gr.group_id, st.status_name
       FROM battle AS b
@@ -411,12 +411,12 @@ router.get('/my-battles/:groupId', checkToken, (req, res) => {
   ]
 
   connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues, (err, userBattleInformation) => {
-    if (err) throw err
+    if (err) return next(err)
     res.status(200).send(userBattleInformation)
   })
 })
 
-router.get('/my-battles/:groupId/pending', (req, res) => {
+router.get('/my-battles/:groupId/pending', (req, res, next) => {
   const sqlGetPendingBattleGroup =
     `SELECT battle_id, status_id
     FROM battle
@@ -425,7 +425,7 @@ router.get('/my-battles/:groupId/pending', (req, res) => {
     `
   const { groupId } = req.params
   connection.query(sqlGetPendingBattleGroup, groupId, (err, battles) => {
-    if (err) throw err
+    if (err) return next(err)
     res.json({ pending: battles.length > 0 })
   })
 })
