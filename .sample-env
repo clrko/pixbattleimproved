@@ -30,3 +30,6 @@ PICS_UPLOADS_PATH=/path/to/uploaded/pictures
 # Or leave empty to use 24 hours as default
 VOTING_PHASE_DURATION_NUM=24
 VOTING_PHASE_DURATION_UNIT=hours
+
+# A key to be provided as a param to the /status route
+CHECK_STATUS_KEY=longRandomKey123

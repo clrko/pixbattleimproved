@@ -26,6 +26,7 @@ app.use('/group-creation', routes.GroupCreation)
 app.use('/members', routes.Members)
 app.use('/profile', routes.Profile)
 app.use('/register', routes.Register)
+app.use('/status', routes.Status)
 
 if (reactBuild) {
   const reactBuildPath = reactBuild.startsWith('/')
