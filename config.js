@@ -18,10 +18,15 @@ module.exports = {
   encryptAlgo: process.env.ENCRYPT_ALGO,
   encryptPassword: process.env.ENCRYPT_PASSWORD,
   encryptIv: process.env.ENCRYPT_IV,
+  reactBuild: process.env.REACT_BUILD_PATH,
   votingPhase: {
     durationUnit: process.env.VOTING_PHASE_DURATION_UNIT || 'hours',
     durationNumber: isNaN(process.env.VOTING_PHASE_DURATION_NUM)
       ? 24
       : Number(process.env.VOTING_PHASE_DURATION_NUM)
-  }
+  },
+  checkStatusKey: process.env.CHECK_STATUS_KEY || 'status',
+  criticalErrorEmails: process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS
+    ? process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS.split(',')
+    : []
 }

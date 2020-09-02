@@ -1,7 +1,7 @@
 const transporter = require('./transporter')
 const { mailUser, appBaseUrl, appName, serverBaseUrl } = require('../../config')
 
-const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupName, battleId }) => {
+const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupName, battleId, errorMessage }) => {
   const getActionUrl = selectedType => {
     switch (selectedType) {
       case 'invitation':
@@ -32,7 +32,8 @@ const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupN
       groupName,
       logo: 'cid:mainLogo',
       mailUser,
-      userName
+      userName,
+      errorMessage
     }
   }
 

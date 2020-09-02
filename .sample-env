@@ -12,9 +12,12 @@ MAIL_HOST=
 MAIL_PORT=
 MAIL_USER=
 MAIL_PASS=
+
 APP_BASE_URL=
 APP_NAME=
 SERVER_BASE_URL=
+# Path to React app build
+REACT_BUILD_PATH=
 
 # Invitation code encryption
 ENCRYPT_ALGO='aes-256-ctr'
@@ -27,3 +30,9 @@ PICS_UPLOADS_PATH=/path/to/uploaded/pictures
 # Or leave empty to use 24 hours as default
 VOTING_PHASE_DURATION_NUM=24
 VOTING_PHASE_DURATION_UNIT=hours
+
+# A key to be provided as a param to the /status route
+CHECK_STATUS_KEY=longRandomKey123
+
+# Recipients for the server error email
+CRITICAL_ERROR_EMAIL_RECIPIENTS=foo@example.com,bar@example.com

@@ -6,6 +6,7 @@ const GroupCreation = require('./group-creation')
 const Members = require('./members')
 const Profile = require('./profile')
 const Register = require('./register')
+const Status = require('./status')
 
 module.exports = {
   Auth,
@@ -15,5 +16,6 @@ module.exports = {
   GroupCreation,
   Members,
   Profile,
-  Register
+  Register,
+  Status
 }
