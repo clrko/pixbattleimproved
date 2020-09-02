@@ -1,6 +1,7 @@
 const mysql = require('mysql2')
-const { dbHost, dbUser, dbPassword, dbDatabase } = require('../../config')
 const Promise = require('bluebird')
+const { dbHost, dbUser, dbPassword, dbDatabase } = require('../../config')
+const logger = require('./logger')
 
 const pool = mysql.createPool({
   host: dbHost,
@@ -10,10 +11,10 @@ const pool = mysql.createPool({
 })
 
 process.on('exit', () => {
-  console.log('About to exit, closing pool')
+  logger.info('[SHUTDOWN] About to exit, closing pool')
   pool.end(function (err) {
-    if (err) console.error('Failed to close pool', err)
-    else console.log('Pool closed')
+    if (err) logger.error('[SHUTDOWN] Failed to close pool', err)
+    else logger.info('[SHUTDOWN] Pool closed')
   })
 })
 
