@@ -1,23 +1,23 @@
-const transporter = require('./transporter')
-const { mailUser, appBaseUrl, appName, serverBaseUrl } = require('../../config')
+const transporter = require('./transporter');
+const { mailUser, appBaseUrl, appName, serverBaseUrl } = require('../../config');
 
 const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupName, battleId, errorMessage }) => {
-  const getActionUrl = selectedType => {
+  const getActionUrl = (selectedType) => {
     switch (selectedType) {
       case 'invitation':
-        return `${appBaseUrl}/invite/${invitationCode}`
+        return `${appBaseUrl}/invite/${invitationCode}`;
       case 'welcome':
-        return `${appBaseUrl}`
+        return `${appBaseUrl}`;
       case 'battleNew':
-        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/post-picture`
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/post-picture`;
       case 'battlePostToVote':
-        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/vote`
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/vote`;
       case 'battleVoteToResults':
-        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/results`
+        return `${appBaseUrl}/groups/${groupId}/battles/${battleId}/results`;
       default:
-        return `${appBaseUrl}`
+        return `${appBaseUrl}`;
     }
-  }
+  };
 
   const mailOptions = {
     from: `"Maxime de ${appName}" <${mailUser}>`,
@@ -33,17 +33,17 @@ const sendMail = ({ type, to, subject, invitationCode, userName, groupId, groupN
       logo: 'cid:mainLogo',
       mailUser,
       userName,
-      errorMessage
-    }
-  }
+      errorMessage,
+    },
+  };
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
-      console.log('erreur est', err)
+      console.log('erreur est', err);
     } else {
-      console.log('Email sent' + info.response)
+      console.log('Email sent' + info.response);
     }
-  })
-}
+  });
+};
 
-module.exports = sendMail
+module.exports = sendMail;

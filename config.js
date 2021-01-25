@@ -1,5 +1,5 @@
-const dotenv = require('dotenv')
-dotenv.config()
+const dotenv = require('dotenv');
+dotenv.config();
 
 module.exports = {
   port: process.env.PORT,
@@ -21,12 +21,10 @@ module.exports = {
   reactBuild: process.env.REACT_BUILD_PATH,
   votingPhase: {
     durationUnit: process.env.VOTING_PHASE_DURATION_UNIT || 'hours',
-    durationNumber: isNaN(process.env.VOTING_PHASE_DURATION_NUM)
-      ? 24
-      : Number(process.env.VOTING_PHASE_DURATION_NUM)
+    durationNumber: isNaN(process.env.VOTING_PHASE_DURATION_NUM) ? 24 : Number(process.env.VOTING_PHASE_DURATION_NUM),
   },
   checkStatusKey: process.env.CHECK_STATUS_KEY || 'status',
   criticalErrorEmails: process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS
     ? process.env.CRITICAL_ERROR_EMAIL_RECIPIENTS.split(',')
-    : []
-}
+    : [],
+};

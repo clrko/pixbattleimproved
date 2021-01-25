@@ -1,13 +1,13 @@
-const logger = require('./logger')
+const logger = require('./logger');
 
-function errorHandler (err, req, res, next) {
-  logger.error(err.stack)
+function errorHandler(err, req, res, next) {
+  logger.error(err.stack);
   if (res.headersSent) {
-    return next(err)
+    return next(err);
   }
   res.status(500).json({
-    error: err.message
-  })
+    error: err.message,
+  });
 }
 
-module.exports = errorHandler
+module.exports = errorHandler;

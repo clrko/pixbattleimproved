@@ -1,7 +1,7 @@
-const nodemailer = require('nodemailer')
-const path = require('path')
-const { mailHost, mailPort, mailUser, mailPass } = require('../../config')
-const hbs = require('nodemailer-express-handlebars')
+const nodemailer = require('nodemailer');
+const path = require('path');
+const { mailHost, mailPort, mailUser, mailPass } = require('../../config');
+const hbs = require('nodemailer-express-handlebars');
 
 const transporter = nodemailer.createTransport({
   host: mailHost,
@@ -10,13 +10,16 @@ const transporter = nodemailer.createTransport({
   secure: true, // true for 465, false for other ports
   auth: {
     user: mailUser,
-    pass: mailPass
-  }
-})
+    pass: mailPass,
+  },
+});
 
-transporter.use('compile', hbs({
-  viewEngine: { layoutsDir: '../views', engine: 'express-handlebars', defaultLayout: false },
-  viewPath: path.resolve(__dirname, '../views')
-}))
+transporter.use(
+  'compile',
+  hbs({
+    viewEngine: { layoutsDir: '../views', engine: 'express-handlebars', defaultLayout: false },
+    viewPath: path.resolve(__dirname, '../views'),
+  }),
+);
 
-module.exports = transporter
+module.exports = transporter;
