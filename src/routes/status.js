@@ -12,7 +12,7 @@ const checkKey = (req, res, next) => {
   next();
 };
 
-router.get('/', checkKey, (req, res, next) =>
+router.get('/', checkKey, (req, res) =>
   pool.query('SELECT COUNT(*) as count FROM battle', (err, rows) => {
     const uptime = Number(process.uptime().toFixed(1));
     if (err) {
