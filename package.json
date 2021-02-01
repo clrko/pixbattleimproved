@@ -1,5 +1,5 @@
 {
-  "name": "pixbattleimproved-sback",
+  "name": "pixbattleimproved-back",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -14,15 +14,10 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged && lint-staged"
+      "pre-commit": "pretty-quick --staged && lint-fix"
     }
   },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix ."
-    ]
-  },
-  "author": "",
+  "author": "Claire Lenfant-Kodia",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
