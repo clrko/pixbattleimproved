@@ -1,4 +1,4 @@
-const { create, addUser, retrieve, updateName, delete } = require('../models/group');
+const { create, addUser, retrieve, updateName, remove } = require('../models/group');
 const { sendInvitationMail } = require('../helper/sendInvitationMail');
 
 module.exports = {
@@ -29,15 +29,15 @@ module.exports = {
   },
 
   /**
-   * Delete one group
+   * remove one group
    * @param {*} req
    * @param {*} res
    * @param {*} next
    */
 
-  async delete(req, res, next) {
+  async remove(req, res, next) {
     try {
-      await delete req.params.groupId;
+      await remove(req.params.groupId);
       return res.sendStatus(200);
     } catch (err) {
       next(err);
@@ -77,7 +77,7 @@ module.exports = {
   },
 
   /**
-   * Invite new members to the group
+   * Invite new members to the group // ajouter a members
    * @param {*} req
    * @param {*} res
    * @param {*} next

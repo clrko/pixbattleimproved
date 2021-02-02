@@ -4,3 +4,5 @@ package-lock.json
 
 uploads/?*.*
 .DS_Store
+
+.vscode

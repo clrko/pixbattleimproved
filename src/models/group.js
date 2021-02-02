@@ -14,7 +14,7 @@ module.exports = {
     await connection.query(sqlGroupUser, insertValues);
   },
 
-  async delete(groupId) {
+  async remove(groupId) {
     const sqlDeleteGroup = 'DELETE FROM `group` WHERE group_id = ?';
     const values = [groupId];
     await connection.query(sqlDeleteGroup, values);
