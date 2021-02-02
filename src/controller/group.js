@@ -1,4 +1,5 @@
-const { create, addUser, retrieve, updateName, remove } = require('../models/group');
+const { create, retrieve, updateName, remove } = require('../models/group');
+const { addUserToGroup } = require('../models/member');
 const { sendInvitationMail } = require('../helper/sendInvitationMail');
 
 module.exports = {
@@ -15,7 +16,7 @@ module.exports = {
       const groupId = await create(req.user.userId, req.body.groupName);
 
       // Insert the admin to the group
-      await addUser(req.user.userId, groupId);
+      await addUserToGroup(req.user.userId, groupId);
 
       // Send the email invitations to the admin's contacts
       const emails = req.body.emails;

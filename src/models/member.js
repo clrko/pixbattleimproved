@@ -18,4 +18,17 @@ module.exports = {
     const deleteValues = [groupId, userId];
     await connection.query(sqlDeleteMember, deleteValues);
   },
+
+  async addUserToGroup(userId, groupId) {
+    const sqlGroupUser = 'INSERT INTO user_group VALUES (?, ?)';
+    const insertValues = [userId, groupId];
+    await connection.query(sqlGroupUser, insertValues);
+  },
+
+  async addUserToBattle(userId, groupId) {
+    const sqlInviteBattle =
+      'INSERT INTO user_battle (user_id, battle_id) VALUES (?, (SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1))';
+    const valuesInviteBattle = [userId, groupId];
+    connection.query(sqlInviteBattle, valuesInviteBattle);
+  },
 };

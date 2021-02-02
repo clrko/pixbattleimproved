@@ -8,12 +8,6 @@ module.exports = {
     return stats.insertId;
   },
 
-  async addUser(adminId, groupId) {
-    const sqlGroupUser = 'INSERT INTO user_group VALUES (?, ?)';
-    const insertValues = [adminId, groupId];
-    await connection.query(sqlGroupUser, insertValues);
-  },
-
   async remove(groupId) {
     const sqlDeleteGroup = 'DELETE FROM `group` WHERE group_id = ?';
     const values = [groupId];
