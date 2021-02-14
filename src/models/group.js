@@ -33,6 +33,12 @@ module.exports = {
     return stats;
   },
 
+  async getUserCountOfGroups(userId) {
+    const sqlNumberGroupsUser = 'SELECT count(*) AS nb_groups FROM user_group WHERE user_id = ?';
+    const userCountOfGroups = await connection.query(sqlNumberGroupsUser, userId);
+    return userCountOfGroups;
+  },
+
   async updateName(newGroupName, groupId) {
     const sqlUpdateGroupName = 'UPDATE `group` SET group_name = ? WHERE group_id = ?';
     const insertValues = [newGroupName, groupId];

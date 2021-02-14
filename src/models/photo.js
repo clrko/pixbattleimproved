@@ -67,4 +67,10 @@ module.exports = {
     const groupPhotos = connection.query(sqlPhotosGroup, groupId);
     return groupPhotos;
   },
+
+  async getUserCountOfPhotos(userId) {
+    const sqlUserCountPhotos = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?';
+    const userCountOfPhotos = await connection.query(sqlUserCountPhotos, userId);
+    return userCountOfPhotos;
+  },
 };
