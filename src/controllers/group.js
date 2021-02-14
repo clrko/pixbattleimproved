@@ -1,24 +1,22 @@
-const { createNewGroup, getUserGroups, updateName, deleteGroup } = require('../models/group');
-const { addUserToGroup } = require('../models/member');
-const { sendInvitationMail } = require('../helper/sendInvitationMail');
+const {
+  createNewGroup,
+  addUserToGroup,
+  getUserGroups,
+  updateGroupName,
+  deleteGroup,
+  getGroupMembers,
+  removeGroupMember,
+} = require('../models/group');
+const { getAllGroupPhotos } = require('../models/photo');
+const { sendInvitationMail } = require('../helpers/sendInvitationMail');
 
 module.exports = {
-  /**
-   * Create the group and send the invitation emails
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   */
-
-  async createGroupAndSendEmail(req, res, next) {
+  async createGroupAndSendInvitationEmail(req, res, next) {
     try {
-      // Create the group in the database
       const groupId = await createNewGroup(req.user.userId, req.body.groupName);
 
-      // Insert the admin to the group
       await addUserToGroup(req.user.userId, groupId);
 
-      // Send the email invitations to the admin's contacts
       const emails = req.body.emails;
       const username = req.user.username;
       sendInvitationMail(emails, username, groupId);
@@ -29,13 +27,6 @@ module.exports = {
     }
   },
 
-  /**
-   * remove one group
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   */
-
   async deleteGroup(req, res, next) {
     try {
       await deleteGroup(req.params.groupId);
@@ -44,13 +35,6 @@ module.exports = {
       next(err);
     }
   },
-
-  /**
-   * Retrieve the information on all the groups of the user
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   */
 
   async getUserGroups(req, res, next) {
     try {
@@ -61,28 +45,14 @@ module.exports = {
     }
   },
 
-  /**
-   * Update the name of the group
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   */
-
-  async updateName(req, res, next) {
+  async updateGroupName(req, res, next) {
     try {
-      await updateName(req.body.groupName, req.params.groupId);
+      await updateGroupName(req.body.groupName, req.params.groupId);
       return res.sendStatus(200);
     } catch (err) {
       next(err);
     }
   },
-
-  /**
-   * Invite new members to the group // ajouter a members
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   */
 
   inviteMembers(req, res, next) {
     try {
@@ -91,6 +61,34 @@ module.exports = {
       const groupId = req.params.groupId;
       sendInvitationMail(emails, username, groupId);
       return res.sendStatus(200);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getGroupMembers(req, res, next) {
+    try {
+      const listMembers = await getGroupMembers(req.params.groupId);
+      return res.status(200).send(listMembers);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async removeFromGroup(req, res, next) {
+    try {
+      await removeGroupMember(req.params.groupId, req.params.userId);
+      await getGroupMembers(req.params.groupId);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getAndSendAllGroupPhotos(req, res, next) {
+    try {
+      const groupId = [req.params.groupId];
+      const photosGroupUrls = await getAllGroupPhotos(groupId);
+      return res.status(200).send(photosGroupUrls);
     } catch (err) {
       next(err);
     }

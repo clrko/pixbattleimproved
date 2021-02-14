@@ -73,4 +73,21 @@ module.exports = {
     const userCountOfPhotos = await connection.query(sqlUserCountPhotos, userId);
     return userCountOfPhotos;
   },
+
+  async updatePhotoScore(photoId) {
+    const sqlUpdate = `UPDATE photo
+        SET score = (SELECT SUM(vote)
+      FROM user_photo
+      WHERE photo_id = ?)
+      WHERE photo_id = ?`;
+    return connection.queryAsync(sqlUpdate, [photoId, photoId]);
+  },
+
+  async getPhotoIds(battleId) {
+    const sqlSelect = `SELECT photo_id
+    FROM photo
+    WHERE battle_id = ?`;
+    const photoIds = await connection.query(sqlSelect, battleId);
+    return photoIds;
+  },
 };

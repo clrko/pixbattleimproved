@@ -4,7 +4,6 @@ const Gallery = require('./gallery');
 const Group = require('./group');
 const Members = require('./members');
 const Profile = require('./profile');
-const Register = require('./register');
 const Status = require('./status');
 
 module.exports = {
@@ -14,6 +13,5 @@ module.exports = {
   Group,
   Members,
   Profile,
-  Register,
   Status,
 };

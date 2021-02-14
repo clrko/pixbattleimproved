@@ -32,5 +32,6 @@ router.get('/battle-results/:battleId/photos', checkToken, battle.getAndSendPhot
 router.get('/my-battles', checkToken, battle.getAndSendUserAllBattles);
 router.get('/my-battles/:groupId', checkToken, battle.getAndSendUserGroupBattles);
 router.get('/my-battles/:groupId/pending', checkToken, battle.getAndSendPendingGroupBattle);
+router.get('/:battleId/photos', checkToken, battle.getAndSendAllBattlePhotos);
 
 module.exports = router;

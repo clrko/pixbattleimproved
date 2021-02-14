@@ -1,4 +1,4 @@
-const connection = require('../helper/db');
+const connection = require('../helpers/db');
 
 module.exports = {
   async createNewGroup(adminId, groupName) {
@@ -12,6 +12,18 @@ module.exports = {
     const sqlDeleteGroup = 'DELETE FROM `group` WHERE group_id = ?';
     const values = [groupId];
     await connection.query(sqlDeleteGroup, values);
+  },
+
+  async updateGroupName(newGroupName, groupId) {
+    const sqlUpdateGroupName = 'UPDATE `group` SET group_name = ? WHERE group_id = ?';
+    const insertValues = [newGroupName, groupId];
+    await connection.query(sqlUpdateGroupName, insertValues);
+  },
+
+  async getGroupName(groupId) {
+    const sqlSelectGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?';
+    const stats = await connection.query(sqlSelectGroupName, groupId);
+    return stats;
   },
 
   async getUserGroups(userId) {
@@ -39,15 +51,27 @@ module.exports = {
     return userCountOfGroups;
   },
 
-  async updateName(newGroupName, groupId) {
-    const sqlUpdateGroupName = 'UPDATE `group` SET group_name = ? WHERE group_id = ?';
-    const insertValues = [newGroupName, groupId];
-    await connection.query(sqlUpdateGroupName, insertValues);
+  async getGroupMembers(groupId) {
+    const sqlGetListMembers = `SELECT u.user_id, u.username, u.email, a.avatar_url
+      FROM user AS u
+      JOIN avatar AS a
+        ON u.avatar_id = a.avatar_id
+      JOIN user_group AS ug
+        ON u.user_id = ug.user_id
+      WHERE ug.group_id = ?`;
+    const stats = connection.query(sqlGetListMembers, groupId);
+    return stats;
   },
 
-  async getGroupName(groupId) {
-    const sqlSelectGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?';
-    const stats = await connection.query(sqlSelectGroupName, groupId);
-    return stats;
+  async removeGroupMember(groupId, userId) {
+    const sqlDeleteMember = 'DELETE FROM user_group WHERE group_id = ? AND user_id = ?';
+    const deleteValues = [groupId, userId];
+    await connection.query(sqlDeleteMember, deleteValues);
+  },
+
+  async addUserToGroup(userId, groupId) {
+    const sqlGroupUser = 'INSERT INTO user_group VALUES (?, ?)';
+    const insertValues = [userId, groupId];
+    await connection.query(sqlGroupUser, insertValues);
   },
 };

@@ -3,7 +3,7 @@ const {
   getRuleList,
   createNewBattle,
   insertBattleRules,
-  getBattleMemberUploadStatus,
+  getBattleParticipantUploadStatus,
   getUserPostedPhotoInformation,
   getBattleInformation,
   getBattleVoteStatus,
@@ -11,14 +11,12 @@ const {
   getUserAllBattlesInformation,
   getUserGroupBattlesInformation,
   getPendingGroupBattle,
-} = require('../models/battle');
-const { getGroupName } = require('../models/group');
-const {
-  getGroupMembers,
   addUserToBattle,
   getBattleParticipantListWithScores,
   getBattleParticipantVictories,
-} = require('../models/member');
+} = require('../models/battle');
+const { getGroupName, getGroupMembers } = require('../models/group');
+
 const {
   updatePhoto,
   uploadPhoto,
@@ -26,13 +24,15 @@ const {
   getBattlePhotosForVote,
   insertUserVotes,
   getBattleUsersWithPhotos,
+  getAllBattlePhotos,
 } = require('../models/photo');
 
-const eventEmitterMail = require('../helper/eventEmitterMail');
+const { sendBattleCreationMail } = require('../helpers/sendInvitationMail');
+
 const {
   scheduleStatusUpdatePostToVote,
   scheduleStatusUpdateVoteToCompleted,
-} = require('../helper/updateBattleStatusJobs');
+} = require('../helpers/updateBattleStatusJobs');
 
 module.exports = {
   async getAndSendThemeList(req, res, next) {
@@ -76,15 +76,7 @@ module.exports = {
       // Send notification email to users
       const groupName = await getGroupName(groupId); // verifier si on reçoit un tableau
       groupMembers.forEach((user) =>
-        eventEmitterMail.emit('sendMail', {
-          type: 'battleNew',
-          to: user.email,
-          subject: `${username} a créé une nouvelle battle`,
-          userName: user.username,
-          groupId,
-          groupName,
-          battleId: createdBattleId,
-        }),
+        sendBattleCreationMail(user.email, username, user.username, groupId, groupName, createdBattleId),
       );
       return res.status(201).send({ battleId: createdBattleId });
     } catch (err) {
@@ -95,7 +87,7 @@ module.exports = {
   async getAndSendBattleMemberUploadStatus(req, res, next) {
     try {
       const battleId = [req.params.battleId];
-      const battleMemberStatus = await getBattleMemberUploadStatus(battleId);
+      const battleMemberStatus = await getBattleParticipantUploadStatus(battleId);
       return res.status(200).send(battleMemberStatus);
     } catch (err) {
       next(err);
@@ -269,6 +261,16 @@ module.exports = {
       const groupId = req.params.groupId;
       const pendingGroupBattle = await getPendingGroupBattle(groupId);
       return res.json({ pending: pendingGroupBattle.length > 0 });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getAndSendAllBattlePhotos(req, res, next) {
+    try {
+      const battleId = [req.params.battleId];
+      const photosBattleUrls = await getAllBattlePhotos(battleId);
+      return res.status(200).send(photosBattleUrls);
     } catch (err) {
       next(err);
     }
