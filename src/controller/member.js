@@ -1,4 +1,4 @@
-const { getList, remove } = require('../controller/member');
+const { getGroupMembers, removeMember } = require('../controller/member');
 
 module.exports = {
   /**
@@ -7,9 +7,9 @@ module.exports = {
    * @param {*} res
    * @param {*} next
    */
-  async getList(req, res, next) {
+  async getGroupMembers(req, res, next) {
     try {
-      const listMembers = await getList(req.params.groupId);
+      const listMembers = await getGroupMembers(req.params.groupId);
       return res.status(200).send(listMembers);
     } catch (err) {
       next(err);
@@ -22,10 +22,10 @@ module.exports = {
    * @param {*} res
    * @param {*} next
    */
-  async remove(req, res, next) {
+  async removeFromGroup(req, res, next) {
     try {
-      await remove(req.params.groupId, req.params.userId);
-      await getList(req.params.groupId);
+      await removeMember(req.params.groupId, req.params.userId);
+      await getGroupMembers(req.params.groupId);
     } catch (err) {
       next(err);
     }

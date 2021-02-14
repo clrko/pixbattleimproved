@@ -1,4 +1,4 @@
-const { create, retrieve, updateName, remove } = require('../models/group');
+const { createNewGroup, getUserGroups, updateName, deleteGroup } = require('../models/group');
 const { addUserToGroup } = require('../models/member');
 const { sendInvitationMail } = require('../helper/sendInvitationMail');
 
@@ -10,10 +10,10 @@ module.exports = {
    * @param {*} next
    */
 
-  async create(req, res, next) {
+  async createGroupAndSendEmail(req, res, next) {
     try {
       // Create the group in the database
-      const groupId = await create(req.user.userId, req.body.groupName);
+      const groupId = await createNewGroup(req.user.userId, req.body.groupName);
 
       // Insert the admin to the group
       await addUserToGroup(req.user.userId, groupId);
@@ -36,9 +36,9 @@ module.exports = {
    * @param {*} next
    */
 
-  async remove(req, res, next) {
+  async deleteGroup(req, res, next) {
     try {
-      await remove(req.params.groupId);
+      await deleteGroup(req.params.groupId);
       return res.sendStatus(200);
     } catch (err) {
       next(err);
@@ -52,9 +52,9 @@ module.exports = {
    * @param {*} next
    */
 
-  async retrieve(req, res, next) {
+  async getUserGroups(req, res, next) {
     try {
-      const userGroupInformation = await retrieve(req.user.userId);
+      const userGroupInformation = await getUserGroups(req.user.userId);
       return res.status(200).send(userGroupInformation);
     } catch (err) {
       next(err);

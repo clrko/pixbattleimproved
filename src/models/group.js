@@ -1,20 +1,20 @@
 const connection = require('../helper/db');
 
 module.exports = {
-  async create(adminId, groupName) {
+  async createNewGroup(adminId, groupName) {
     const sqlCreateGroup = 'INSERT INTO `group` (admin_user_id, group_name) VALUES (?, ?)';
     const values = [adminId, groupName];
     const stats = await connection.query(sqlCreateGroup, values);
     return stats.insertId;
   },
 
-  async remove(groupId) {
+  async deleteGroup(groupId) {
     const sqlDeleteGroup = 'DELETE FROM `group` WHERE group_id = ?';
     const values = [groupId];
     await connection.query(sqlDeleteGroup, values);
   },
 
-  async retrieve(userId) {
+  async getUserGroups(userId) {
     const sqlGetGroupInformation = `SELECT
     gr.group_id,
     gr.group_name,
@@ -34,8 +34,14 @@ module.exports = {
   },
 
   async updateName(newGroupName, groupId) {
-    const sql = 'UPDATE `group` SET group_name = ? WHERE group_id = ?';
+    const sqlUpdateGroupName = 'UPDATE `group` SET group_name = ? WHERE group_id = ?';
     const insertValues = [newGroupName, groupId];
-    await connection.query(sql, insertValues);
+    await connection.query(sqlUpdateGroupName, insertValues);
+  },
+
+  async getGroupName(groupId) {
+    const sqlSelectGroupName = 'SELECT group_name FROM `group` WHERE group_id = ?';
+    const stats = await connection.query(sqlSelectGroupName, groupId);
+    return stats;
   },
 };

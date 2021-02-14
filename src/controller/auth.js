@@ -5,6 +5,7 @@ const { jwtSecret } = require('../../config');
 const { decrypt } = require('../helper/encryptionCode');
 const { checkIfEmailExist, checkIfIsAlreadyInGroup } = require('../models/auth');
 const { addUserToGroup, addUserToBattle } = require('../models/member');
+const { getBattleWithStatusPost } = require('../models/battle');
 
 module.exports = {
   async authenticate(req, res, next) {
@@ -30,7 +31,8 @@ module.exports = {
         const isAlreadyInGroup = await checkIfIsAlreadyInGroup(userId, groupId);
         if (isAlreadyInGroup.length === 0) {
           await addUserToGroup(userId, groupId);
-          await addUserToBattle(userId, groupId);
+          const battleId = await getBattleWithStatusPost(groupId); // verifier ce qu'on reçoit
+          await addUserToBattle([userId, battleId]);
         }
       }
 
