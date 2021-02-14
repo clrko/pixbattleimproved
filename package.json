@@ -14,7 +14,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged && lint-fix"
+      "pre-commit": "pretty-quick --staged && npm run lint-fix"
     }
   },
   "author": "Claire Lenfant-Kodia",

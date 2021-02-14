@@ -5,9 +5,9 @@ const checkToken = require('../helper/checkToken');
 
 const router = express.Router();
 
-router.post('/', checkToken, group.create);
-router.get('/my-groups', checkToken, group.retrieve);
-router.delete('/:groupId', checkToken, group.remove);
+router.post('/', checkToken, group.createGroupAndSendEmail);
+router.get('/my-groups', checkToken, group.getUserGroups);
+router.delete('/:groupId', checkToken, group.deleteGroup);
 router.put('/update/:groupId', checkToken, group.updateName);
 router.post('/add-members/:groupId', checkToken, group.inviteMembers);
 
