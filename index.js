@@ -22,14 +22,10 @@ app.use(express.static('assets'));
 app.use(express.static(process.env.PICS_UPLOADS_PATH || 'uploads'));
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/auth', routes.Auth);
 app.use('/battle', routes.Battle);
-app.use('/gallery', routes.Gallery);
 app.use('/group', routes.Group);
-app.use('/group-creation', routes.GroupCreation);
-app.use('/members', routes.Members);
-app.use('/profile', routes.Profile);
 app.use('/status', routes.Status);
+app.use('/user', routes.User);
 
 if (reactBuild) {
   const reactBuildPath = reactBuild.startsWith('/') ? reactBuild : path.resolve(__dirname, reactBuild);
