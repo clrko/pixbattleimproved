@@ -1,4 +1,4 @@
-const pool = require('../helper/db');
+const pool = require('../helpers/db');
 
 module.exports = {
   async getGlobalCountOfBattles() {

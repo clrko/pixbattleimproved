@@ -1,4 +1,4 @@
-const connection = require('../helper/db');
+const connection = require('../helpers/db');
 
 module.exports = {
   async getThemeList() {
@@ -27,7 +27,7 @@ module.exports = {
 
   async getBattleWithStatusPost(groupId) {
     const sqlBattlePostStatus = 'SELECT b.battle_id FROM battle AS b WHERE b.group_id = ? AND b.status_id = 1';
-    const stats = connection.query(sqlBattlePostStatus, groupId);
+    const stats = await connection.query(sqlBattlePostStatus, groupId);
     return stats[0];
   },
 
@@ -47,7 +47,7 @@ module.exports = {
           ON u.user_id = p.user_id
         WHERE ub.battle_id = ?
         GROUP BY u.user_id;`;
-    const stats = connection.query(sqlBattlePostStatus, [battleId, battleId]);
+    const stats = await connection.query(sqlBattlePostStatus, [battleId, battleId]);
     return stats;
   },
 
@@ -57,7 +57,7 @@ module.exports = {
             WHERE p.user_id = ?
             AND p.battle_id IN(?)`;
     const values = [userId, queryId];
-    const stats = connection.query(sql, values);
+    const stats = await connection.query(sql, values);
     return stats;
   },
 
@@ -66,7 +66,7 @@ module.exports = {
             FROM battle
             WHERE group_id = ?
             AND status_id != 3`;
-    const pendingBattle = connection.query(sqlGetPendingBattleGroup, groupId);
+    const pendingBattle = await connection.query(sqlGetPendingBattleGroup, groupId);
     return pendingBattle;
   },
 
@@ -81,7 +81,7 @@ module.exports = {
             ON u.user_id = up.user_id
             WHERE ub.battle_id = ?
             GROUP BY u.user_id`;
-    const battleVoteStatus = connection.query(sqlBattleVoteStatus, [battleId, battleId]);
+    const battleVoteStatus = await connection.query(sqlBattleVoteStatus, [battleId, battleId]);
     return battleVoteStatus;
   },
 
@@ -93,7 +93,7 @@ module.exports = {
             WHERE up.user_id = ?
             AND p.battle_id = ?`;
     const values = [userId, battleId];
-    const userVoteStatus = connection.query(sql, values);
+    const userVoteStatus = await connection.query(sql, values);
     return userVoteStatus;
   },
 
@@ -108,7 +108,7 @@ module.exports = {
                 ON r.rule_id = br.rule_id
             WHERE b.battle_id = ?`;
     const valueBattleId = [battleId];
-    const battleInfos = connection.query(sqlBattleInfos, valueBattleId);
+    const battleInfos = await connection.query(sqlBattleInfos, valueBattleId);
     return battleInfos;
   },
 
@@ -124,7 +124,7 @@ module.exports = {
             JOIN user_battle AS ub
                 ON b.battle_id = ub.battle_id
             WHERE ub.user_id = ?`;
-    const userBattleInformation = connection.query(sqlGetBattleInformation, userId);
+    const userBattleInformation = await connection.query(sqlGetBattleInformation, userId);
     return userBattleInformation;
   },
 
@@ -141,7 +141,7 @@ module.exports = {
             ON b.battle_id = ub.battle_id
             WHERE ub.user_id = ? AND b.group_id = ?`;
     const sqlGetBattleInformationValues = [userId, groupId];
-    const userGroupBattleInformation = connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues);
+    const userGroupBattleInformation = await connection.query(sqlGetBattleInformation, sqlGetBattleInformationValues);
     return userGroupBattleInformation;
   },
 
@@ -167,7 +167,7 @@ module.exports = {
     LEFT JOIN battle AS b
       ON u.user_id = b.winner_user_id
     WHERE user_id = ?`;
-    const userCountOfVictories = connection.query(sqlUserVictories, userId);
+    const userCountOfVictories = await connection.query(sqlUserVictories, userId);
     return userCountOfVictories;
   },
 
@@ -188,7 +188,7 @@ module.exports = {
 
   async getUserCountOfBattles(userId) {
     const sqlNumberBattlesUser = 'SELECT count(*) AS nb_battles FROM user_battle WHERE user_id = ?';
-    const userCountOfBattles = connection.query(sqlNumberBattlesUser, userId);
+    const userCountOfBattles = await connection.query(sqlNumberBattlesUser, userId);
     return userCountOfBattles;
   },
 
@@ -221,7 +221,7 @@ module.exports = {
     const sql = `SELECT battle_id, deadline
       FROM battle
       WHERE status_id = ?`;
-    const battles = connection.query(sql, statusId);
+    const battles = await connection.query(sql, statusId);
     return battles;
   },
 

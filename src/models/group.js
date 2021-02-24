@@ -59,7 +59,7 @@ module.exports = {
       JOIN user_group AS ug
         ON u.user_id = ug.user_id
       WHERE ug.group_id = ?`;
-    const stats = connection.query(sqlGetListMembers, groupId);
+    const stats = await connection.query(sqlGetListMembers, groupId);
     return stats;
   },
 

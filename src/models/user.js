@@ -1,4 +1,4 @@
-const connection = require('../helper/db');
+const connection = require('../helpers/db');
 
 module.exports = {
   getAvatars() {

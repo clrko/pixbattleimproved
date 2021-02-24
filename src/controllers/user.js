@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 const { jwtSecret } = require('../../config');
 
-const { decrypt } = require('../helper/encryptionCode');
+const { decrypt } = require('../helpers/encryptionCode');
 const { sendWelcomeMail } = require('../helpers/sendInvitationMail');
 
 const {

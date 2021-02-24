@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const checkToken = require('../helper/checkToken');
+const checkToken = require('../helpers/checkToken');
 const { battle } = require('../controller/battle');
-const { upload } = require('../helper/uploadPhoto');
+const { upload } = require('../helpers/uploadPhoto');
 
 // Battle Creation
 router.get('/battle-creation/themes', battle.getAndSendThemeList);

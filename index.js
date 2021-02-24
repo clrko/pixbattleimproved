@@ -2,9 +2,9 @@ const cors = require('cors');
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
-const logger = require('./src/helper/logger');
-const errorHandler = require('./src/helper/errorHandler');
-require('./src/helper/updateBattleStatusJobs');
+const logger = require('./src/helpers/logger');
+const errorHandler = require('./src/helpers/errorHandler');
+require('./src/helpers/updateBattleStatusJobs');
 
 const { port, reactBuild } = require('./config');
 const routes = require('./src/routes/index');

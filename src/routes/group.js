@@ -1,7 +1,7 @@
 const express = require('express');
 
-const group = require('../controller/group');
-const checkToken = require('../helper/checkToken');
+const group = require('../controllers/group');
+const checkToken = require('../helpers/checkToken');
 
 const router = express.Router();
 
