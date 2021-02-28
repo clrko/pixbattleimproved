@@ -21,6 +21,4 @@ const logger = createLogger({
   ],
 });
 
-// logger.exceptions.handle(new EmailTransport({ emails: criticalErrorEmails }));
-
 module.exports = logger;
