@@ -1,8 +1,10 @@
 const express = require('express');
-const router = express.Router();
 
-const { checkKey } = require('../helper/checkKey');
-const { status } = require('../controller/status');
+const { status } = require('../controllers/status');
+
+const { checkKey } = require('../helpers/checkKey');
+
+const router = express.Router();
 
 router.get('/', checkKey, status.getAndSendTotalCountOfBattles);
 

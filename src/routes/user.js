@@ -1,8 +1,10 @@
 const express = require('express');
-const router = express.Router();
+
+const { user } = require('../controllers/profile');
 
 const checkToken = require('../helpers/checkToken');
-const { user } = require('../controllers/profile');
+
+const router = express.Router();
 
 router.get('/', checkToken, user.getAndSendUserProfileInformation);
 router.get('/my-ranking', checkToken, user.getAndSendUserRankingInformation);

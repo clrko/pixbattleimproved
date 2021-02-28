@@ -2,6 +2,7 @@ const cors = require('cors');
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
+
 const logger = require('./src/helpers/logger');
 const errorHandler = require('./src/helpers/errorHandler');
 require('./src/helpers/updateBattleStatusJobs');

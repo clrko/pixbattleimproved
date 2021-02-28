@@ -1,13 +1,15 @@
 const express = require('express');
-const router = express.Router();
+
+const { battle } = require('../controllers/battle');
 
 const checkToken = require('../helpers/checkToken');
-const { battle } = require('../controller/battle');
 const { upload } = require('../helpers/uploadPhoto');
 
+const router = express.Router();
+
 // Battle Creation
-router.get('/battle-creation/themes', battle.getAndSendThemeList);
-router.get('/battle-creation/rules', battle.getAndSendRuleList);
+router.get('/battle-creation/themes', checkToken, battle.getAndSendThemeList);
+router.get('/battle-creation/rules', checkToken, battle.getAndSendRuleList);
 router.post('/battle-creation', checkToken, battle.createNewBattleAndNotifyUsers);
 
 // Battle Post

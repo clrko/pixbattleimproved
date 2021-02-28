@@ -48,131 +48,129 @@ const createToken = (userId, username, avatar, userEmail) => {
   return { token, tokenUserInfo };
 };
 
-module.exports = {
-  async authenticate(req, res, next) {
-    try {
-      // Check if the email exist and get the user information if so
-      const stats = await checkIfEmailExist(req.body.email);
-      if (stats.length === 0) {
-        return res.status(401).send('The password or username is wrong');
-      }
-
-      const { user_id: userId, username, avatar_url: avatar, email: userEmail, password } = stats[0];
-
-      // Check if the passwords match
-      const myPlaintextPassword = req.body.password;
-      const passwordMatch = await bcrypt.compare(myPlaintextPassword, password);
-      if (!passwordMatch) {
-        return res.sendStatus(401).send('The password or username is wrong');
-      }
-
-      if (req.body.invitationCode) {
-        await addUserToGroupAndBattleWithInviationCode(req.body.invitationCode, userId);
-      }
-
-      const { token, tokenUserInfo } = createToken(userId, username, avatar, userEmail);
-      res.header('Access-Control-Expose-Headers', 'x-access-token');
-      res.set('x-access-token', token);
-
-      return res.status(200).send(tokenUserInfo);
-    } catch (err) {
-      next(err);
+exports.authenticate = async (req, res, next) => {
+  try {
+    // Check if the email exist and get the user information if so
+    const stats = await checkIfEmailExist(req.body.email);
+    if (stats.length === 0) {
+      return res.status(401).send('The password or username is wrong');
     }
-  },
 
-  async registerAndSendWelcomeEmail(req, res, next) {
-    try {
-      const { email, password, username } = req.body;
+    const { user_id: userId, username, avatar_url: avatar, email: userEmail, password } = stats[0];
 
-      const result = await checkIfEmailExist(email);
-
-      // User already registered
-      if (result[0].email && result[0].username) {
-        return res.sendStatus(409);
-      }
-
-      // User not registered
-      const saltRounds = 10;
-      const myPlaintextPassword = password;
-      const salt = await bcrypt.genSalt(saltRounds);
-      const hash = await bcrypt.hash(myPlaintextPassword, salt);
-      createNewUser(username, email, hash);
-      const userInformation = getUserInformation(email);
-      const { user_id: userId, avatar_url: avatar } = userInformation;
-      if (req.body.invitationCode) {
-        addUserToGroupAndBattleWithInviationCode(req.body.invitationCode, userId);
-      }
-
-      const { token, tokenUserInfo } = createToken(userId, username, avatar, email);
-      res.header('Access-Control-Expose-Headers', 'x-access-token');
-      res.set('x-access-token', token);
-
-      sendWelcomeMail(email, username);
-
-      return res.status(200).send(tokenUserInfo);
-    } catch (err) {
-      next(err);
+    // Check if the passwords match
+    const myPlaintextPassword = req.body.password;
+    const passwordMatch = await bcrypt.compare(myPlaintextPassword, password);
+    if (!passwordMatch) {
+      return res.sendStatus(401).send('The password or username is wrong');
     }
-  },
 
-  async getAndSendUserProfileInformation(res, req, next) {
-    try {
-      const { userId } = req.user;
-      const userCountOfVictories = await getUserCountOfVictories(userId);
-      const userCountOfPhotos = await getUserCountOfPhotos(userId);
-      const userCountOfGroups = await getUserCountOfGroups(userId);
-      const userCountOfBattles = await getUserCountOfBattles(userId);
-
-      const allInfos = {
-        userCountOfVictories,
-        userCountOfPhotos,
-        userCountOfGroups,
-        userCountOfBattles,
-      };
-      return res.status(200).send(allInfos);
-    } catch (err) {
-      next(err);
+    if (req.body.invitationCode) {
+      await addUserToGroupAndBattleWithInviationCode(req.body.invitationCode, userId);
     }
-  },
 
-  async getAndSendUserRankingInformation(req, res, next) {
-    try {
-      const { userId } = req.user;
-      const userRanking = await getUserRanking(userId);
-      return res.status(200).send(userRanking);
-    } catch (err) {
-      next(err);
+    const { token, tokenUserInfo } = createToken(userId, username, avatar, userEmail);
+    res.header('Access-Control-Expose-Headers', 'x-access-token');
+    res.set('x-access-token', token);
+
+    return res.status(200).send(tokenUserInfo);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.registerAndSendWelcomeEmail = async (req, res, next) => {
+  try {
+    const { email, password, username } = req.body;
+
+    const result = await checkIfEmailExist(email);
+
+    // User already registered
+    if (result[0].email && result[0].username) {
+      return res.sendStatus(409);
     }
-  },
 
-  async getAndSendAvatarList(req, res, next) {
-    try {
-      const avatars = await getAvatars();
-      return res.status(200).send(avatars);
-    } catch (err) {
-      next(err);
+    // User not registered
+    const saltRounds = 10;
+    const myPlaintextPassword = password;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(myPlaintextPassword, salt);
+    createNewUser(username, email, hash);
+    const userInformation = getUserInformation(email);
+    const { user_id: userId, avatar_url: avatar } = userInformation;
+    if (req.body.invitationCode) {
+      addUserToGroupAndBattleWithInviationCode(req.body.invitationCode, userId);
     }
-  },
 
-  async updateUserInformationAndSendToken(req, res, next) {
-    try {
-      const userId = req.user.userId;
-      const avatarId = req.body.selectedAvatar;
-      const avatarUrl = req.body.selectedAvatarUrl;
-      const username = req.body.newUsername;
-      const email = req.user.userEmail;
-      const valuesToUpdate = { avatar_id: avatarId };
-      if (username) {
-        valuesToUpdate.username = username;
-      }
-      updateUserInformation(valuesToUpdate, userId);
+    const { token, tokenUserInfo } = createToken(userId, username, avatar, email);
+    res.header('Access-Control-Expose-Headers', 'x-access-token');
+    res.set('x-access-token', token);
 
-      const { token, tokenUserInfo } = createToken(userId, username, avatarUrl, email);
-      res.header('Access-Control-Expose-Headers', 'x-access-token');
-      res.set('x-access-token', token);
-      return res.status(200).send(tokenUserInfo);
-    } catch (err) {
-      next(err);
+    sendWelcomeMail(email, username);
+
+    return res.status(200).send(tokenUserInfo);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAndSendUserProfileInformation = async (res, req, next) => {
+  try {
+    const { userId } = req.user;
+    const userCountOfVictories = await getUserCountOfVictories(userId);
+    const userCountOfPhotos = await getUserCountOfPhotos(userId);
+    const userCountOfGroups = await getUserCountOfGroups(userId);
+    const userCountOfBattles = await getUserCountOfBattles(userId);
+
+    const allInfos = {
+      userCountOfVictories,
+      userCountOfPhotos,
+      userCountOfGroups,
+      userCountOfBattles,
+    };
+    return res.status(200).send(allInfos);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAndSendUserRankingInformation = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const userRanking = await getUserRanking(userId);
+    return res.status(200).send(userRanking);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAndSendAvatarList = async (req, res, next) => {
+  try {
+    const avatars = await getAvatars();
+    return res.status(200).send(avatars);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateUserInformationAndSendToken = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const avatarId = req.body.selectedAvatar;
+    const avatarUrl = req.body.selectedAvatarUrl;
+    const username = req.body.newUsername;
+    const email = req.user.userEmail;
+    const valuesToUpdate = { avatar_id: avatarId };
+    if (username) {
+      valuesToUpdate.username = username;
     }
-  },
+    updateUserInformation(valuesToUpdate, userId);
+
+    const { token, tokenUserInfo } = createToken(userId, username, avatarUrl, email);
+    res.header('Access-Control-Expose-Headers', 'x-access-token');
+    res.set('x-access-token', token);
+    return res.status(200).send(tokenUserInfo);
+  } catch (err) {
+    next(err);
+  }
 };

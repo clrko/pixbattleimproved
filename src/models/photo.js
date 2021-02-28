@@ -1,47 +1,46 @@
 const connection = require('../helpers/db');
 
-module.exports = {
-  async uploadPhoto(filename, userId, battleId, groupId) {
-    const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)';
-    const valuesInsertPhoto = [filename, userId, battleId, groupId];
-    const stats = await connection.query(sqlInsertPhoto, valuesInsertPhoto);
-    return stats.insertId;
-  },
+exports.uploadPhoto = async (filename, userId, battleId, groupId) => {
+  const sqlInsertPhoto = 'INSERT INTO photo (photo_url, user_id, battle_id, group_id) VALUES (?, ?, ?, ?)';
+  const valuesInsertPhoto = [filename, userId, battleId, groupId];
+  const stats = await connection.query(sqlInsertPhoto, valuesInsertPhoto);
+  return stats.insertId;
+};
 
-  async updatePhoto(photoUrl, photoId) {
-    const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?';
-    const valuesUpdatePhoto = [photoUrl, photoId];
-    await connection.query(sqlUpdatePhoto, valuesUpdatePhoto);
-  },
-  async deletePhoto(photoId) {
-    const sqlDeletePhoto = 'DELETE FROM photo WHERE photo_id = ?';
-    const valueDeletePhoto = [photoId];
-    await connection.query(sqlDeletePhoto, valueDeletePhoto);
-  },
+exports.updatePhoto = async (photoUrl, photoId) => {
+  const sqlUpdatePhoto = 'UPDATE photo SET photo_url = ? WHERE photo_id = ?';
+  const valuesUpdatePhoto = [photoUrl, photoId];
+  await connection.query(sqlUpdatePhoto, valuesUpdatePhoto);
+};
+exports.deletePhoto = async (photoId) => {
+  const sqlDeletePhoto = 'DELETE FROM photo WHERE photo_id = ?';
+  const valueDeletePhoto = [photoId];
+  await connection.query(sqlDeletePhoto, valueDeletePhoto);
+};
 
-  async getBattlePhotosForVote(battleId, userId) {
-    const sqlPhotosBattle = `SELECT * FROM photo AS p
+exports.getBattlePhotosForVote = async (battleId, userId) => {
+  const sqlPhotosBattle = `SELECT * FROM photo AS p
             JOIN battle AS b
             ON b.battle_id = p.battle_id
             WHERE b.battle_id = ?
             AND NOT p.user_id = ?`;
-    const values = [battleId, userId];
-    const photos = await connection.query(sqlPhotosBattle, values);
-    return photos;
-  },
+  const values = [battleId, userId];
+  const photos = await connection.query(sqlPhotosBattle, values);
+  return photos;
+};
 
-  async insertUserVotes(votes) {
-    const sqlPostVote = `INSERT INTO user_photo
+exports.insertUserVotes = async (votes) => {
+  const sqlPostVote = `INSERT INTO user_photo
             (user_id, photo_id, vote)
             VALUES
             (?, ?, ?),
             (?, ?, ?),
             (?, ?, ?)`;
-    await connection.query(sqlPostVote, votes);
-  },
+  await connection.query(sqlPostVote, votes);
+};
 
-  async getBattleUsersWithPhotos(battleId) {
-    const sqlGetUsers = `SELECT u.username, a.avatar_url, up.vote, up.photo_id, p.*
+exports.getBattleUsersWithPhotos = async (battleId) => {
+  const sqlGetUsers = `SELECT u.username, a.avatar_url, up.vote, up.photo_id, p.*
             FROM avatar AS a
             JOIN user AS u
                 ON u.avatar_id = a.avatar_id
@@ -50,44 +49,42 @@ module.exports = {
             JOIN photo AS p
                 ON p.photo_id = up.photo_id
             WHERE p.battle_id = ?`;
-    const battlePhotos = await connection.query(sqlGetUsers, battleId);
-    return battlePhotos;
-  },
+  const battlePhotos = await connection.query(sqlGetUsers, battleId);
+  return battlePhotos;
+};
 
-  async getAllBattlePhotos(battleId) {
-    const sqlPhotosBattle =
-      'SELECT * FROM photo AS p JOIN battle AS b ON b.battle_id = p.battle_id WHERE b.battle_id = ?';
-    const battlePhotos = connection.query(sqlPhotosBattle, battleId);
-    return battlePhotos;
-  },
+exports.getAllBattlePhotos = async (battleId) => {
+  const sqlPhotosBattle =
+    'SELECT * FROM photo AS p JOIN battle AS b ON b.battle_id = p.battle_id WHERE b.battle_id = ?';
+  const battlePhotos = connection.query(sqlPhotosBattle, battleId);
+  return battlePhotos;
+};
 
-  async getAllGroupPhotos(groupId) {
-    const sqlPhotosGroup =
-      'SELECT  * FROM photo AS p JOIN `group` AS g ON g.group_id = p.group_id WHERE g.group_id = ?';
-    const groupPhotos = connection.query(sqlPhotosGroup, groupId);
-    return groupPhotos;
-  },
+exports.getAllGroupPhotos = async (groupId) => {
+  const sqlPhotosGroup = 'SELECT  * FROM photo AS p JOIN `group` AS g ON g.group_id = p.group_id WHERE g.group_id = ?';
+  const groupPhotos = connection.query(sqlPhotosGroup, groupId);
+  return groupPhotos;
+};
 
-  async getUserCountOfPhotos(userId) {
-    const sqlUserCountPhotos = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?';
-    const userCountOfPhotos = await connection.query(sqlUserCountPhotos, userId);
-    return userCountOfPhotos;
-  },
+exports.getUserCountOfPhotos = async (userId) => {
+  const sqlUserCountPhotos = 'SELECT count(*) AS nb_photos FROM photo WHERE user_id = ?';
+  const userCountOfPhotos = await connection.query(sqlUserCountPhotos, userId);
+  return userCountOfPhotos;
+};
 
-  async updatePhotoScore(photoId) {
-    const sqlUpdate = `UPDATE photo
+exports.updatePhotoScore = async (photoId) => {
+  const sqlUpdate = `UPDATE photo
         SET score = (SELECT SUM(vote)
       FROM user_photo
       WHERE photo_id = ?)
       WHERE photo_id = ?`;
-    return connection.queryAsync(sqlUpdate, [photoId, photoId]);
-  },
+  return connection.queryAsync(sqlUpdate, [photoId, photoId]);
+};
 
-  async getPhotoIds(battleId) {
-    const sqlSelect = `SELECT photo_id
+exports.getPhotoIds = async (battleId) => {
+  const sqlSelect = `SELECT photo_id
     FROM photo
     WHERE battle_id = ?`;
-    const photoIds = await connection.query(sqlSelect, battleId);
-    return photoIds;
-  },
+  const photoIds = await connection.query(sqlSelect, battleId);
+  return photoIds;
 };

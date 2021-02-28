@@ -1,4 +1,4 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const Promise = require('bluebird');
 const { dbHost, dbUser, dbPassword, dbDatabase } = require('../../config');
 const logger = require('./logger');
