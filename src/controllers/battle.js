@@ -27,7 +27,7 @@ const {
   getAllBattlePhotos,
 } = require('../models/photo');
 
-const { sendBattleCreationMail } = require('../helpers/sendInvitationMail');
+const { sendBattleCreationMail } = require('../helpers/sendEventMail');
 
 const {
   scheduleStatusUpdatePostToVote,

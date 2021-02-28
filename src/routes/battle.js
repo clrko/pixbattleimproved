@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { battle } = require('../controllers/battle');
+const battle = require('../controllers/battle');
 
 const checkToken = require('../helpers/checkToken');
 const { upload } = require('../helpers/uploadPhoto');

@@ -1,32 +1,41 @@
 const CronJob = require('cron').CronJob;
 const moment = require('moment');
 const Promise = require('bluebird');
+const connection = require('./db');
 const logger = require('./logger');
-
-const { votingPhase } = require('../../config');
+const eventEmitterMail = require('./eventEmitterMail');
 const updateBattleStatus = require('./updateBattleStatus');
-const { getBattleByStatus, getUserBattleData, getBattleInfos, setBattleWinner } = require('../models/battle');
-const { updatePhotoScore, getPhotoIds } = require('../models/photo');
-const { sendBattleStatusChangeToVoteMail, sendBattleStatusChangeToResultsMail } = require('./sendEventMail');
+const { votingPhase } = require('../../config');
 
 const getBattlesByStatus = (statusId, cb) => {
-  try {
-    const battles = getBattleByStatus(statusId);
+  const sql = `SELECT battle_id, deadline
+    FROM battle
+    WHERE status_id = ?`;
+  connection.query(sql, statusId, (err, battles) => {
+    if (err) return cb(err);
     return cb(null, battles);
-  } catch (err) {
-    return cb(err);
-  }
+  });
 };
 
-getBattlesByStatus(1, (err, battles) => {
-  if (err) throw err;
-  battles.forEach(scheduleStatusUpdatePostToVote);
-});
+const getUserBattleData = async (battleId) => {
+  const sql = `SELECT u.username, u.email
+  FROM user AS u
+  JOIN user_battle AS ub
+  ON u.user_id = ub.user_id
+  WHERE ub.battle_id = ?`;
+  return connection.queryAsync(sql, battleId);
+};
 
-getBattlesByStatus(2, (err, battles) => {
-  if (err) throw err;
-  battles.forEach(scheduleStatusUpdateVoteToCompleted);
-});
+const getBattleInfos = async (battleId) => {
+  const sql = `SELECT g.group_id, g.group_name, t.theme_name
+  FROM battle AS b
+  JOIN theme AS t
+  ON b.theme_id = t.theme_id
+  JOIN \`group\` AS g
+  ON b.group_id = g.group_id
+  WHERE b.battle_id = ?`;
+  return connection.queryAsync(sql, battleId).then((battleInfos) => battleInfos[0]);
+};
 
 const scheduleStatusUpdatePostToVote = (battle) => {
   const isPast = moment().isAfter(moment(battle.deadline));
@@ -46,16 +55,18 @@ const scheduleStatusUpdatePostToVote = (battle) => {
           const { group_id: groupId, group_name: groupName, theme_name: themeName } = await getBattleInfos(
             battle.battle_id,
           );
-          userBattleData.forEach((user) => {
-            sendBattleStatusChangeToVoteMail(
-              user.email,
-              user.username,
+          userBattleData.forEach((user) =>
+            eventEmitterMail.emit('sendMail', {
+              type: 'battlePostToVote',
+              to: user.email,
+              subject: 'Les votes sont ouverts!',
+              userName: user.username,
               groupId,
               groupName,
-              battle.battle_id,
+              battleId: battle.battle_id,
               themeName,
-            );
-          });
+            }),
+          );
           logger.info(`Change battle status to vote for ${battle.battle_id}`);
         }
       });
@@ -67,14 +78,38 @@ const scheduleStatusUpdatePostToVote = (battle) => {
   job.start();
 };
 
+const updatePhotoScore = (photoId) => {
+  const sqlUpdate = `UPDATE photo
+      SET score = (SELECT SUM(vote)
+    FROM user_photo
+    WHERE photo_id = ?)
+    WHERE photo_id = ?`;
+  return connection.queryAsync(sqlUpdate, [photoId, photoId]);
+};
+
 const updateBattlePhotosScores = (battleId) => {
-  try {
-    const results = getPhotoIds(battleId);
+  const sqlSelect = `SELECT photo_id
+    FROM photo
+    WHERE battle_id = ?`;
+  connection.query(sqlSelect, battleId, (err, results) => {
+    if (err) return err;
     const photoIds = results.map((result) => result.photo_id);
     Promise.map(photoIds, (photoId) => updatePhotoScore(photoId)).then(() => setBattleWinner(battleId));
-  } catch (err) {
-    return err;
-  }
+  });
+};
+
+const setBattleWinner = (battleId) => {
+  const updateWinner = `UPDATE battle
+    SET winner_user_id =
+      (SELECT user_id
+      FROM photo AS p
+      WHERE battle_id = ?
+      ORDER BY score DESC
+      LIMIT 1)
+  WHERE battle_id = ?`;
+  connection.query(updateWinner, [battleId, battleId], (err) => {
+    if (err) return err;
+  });
 };
 
 const scheduleStatusUpdateVoteToCompleted = (battle) => {
@@ -99,14 +134,16 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
             battle.battle_id,
           );
           userBattleData.forEach((user) =>
-            sendBattleStatusChangeToResultsMail(
-              user.email,
-              user.username,
+            eventEmitterMail.emit('sendMail', {
+              type: 'battleVoteToResults',
+              to: user.email,
+              subject: 'Les resultats sont disponibles',
+              userName: user.username,
               groupId,
               groupName,
-              battle.battle_id,
+              battleId: battle.battle_id,
               themeName,
-            ),
+            }),
           );
           logger.info(`Change battle status to completed for ${battle.battle_id}`);
         }
@@ -118,5 +155,15 @@ const scheduleStatusUpdateVoteToCompleted = (battle) => {
   );
   job.start();
 };
+
+getBattlesByStatus(1, (err, battles) => {
+  if (err) throw err;
+  battles.forEach(scheduleStatusUpdatePostToVote);
+});
+
+getBattlesByStatus(2, (err, battles) => {
+  if (err) throw err;
+  battles.forEach(scheduleStatusUpdateVoteToCompleted);
+});
 
 module.exports = { scheduleStatusUpdatePostToVote, scheduleStatusUpdateVoteToCompleted };
