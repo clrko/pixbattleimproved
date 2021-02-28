@@ -7,7 +7,7 @@ exports.createNewGroup = async (adminId, groupName) => {
   return stats.insertId;
 };
 
-exports.deleteGroup = async (groupId) => {
+exports.deleteOneGroup = async (groupId) => {
   const sqlDeleteGroup = 'DELETE FROM `group` WHERE group_id = ?';
   const values = [groupId];
   connection.query(sqlDeleteGroup, values);

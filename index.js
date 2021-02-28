@@ -5,7 +5,7 @@ const path = require('path');
 
 const logger = require('./src/helpers/logger');
 const errorHandler = require('./src/helpers/errorHandler');
-require('./src/helpers/updateBattleStatusJobs');
+// require('./src/helpers/updateBattleStatusJobs');
 
 const { port, reactBuild } = require('./config');
 const routes = require('./src/routes/index');
@@ -23,10 +23,10 @@ app.use(express.static('assets'));
 app.use(express.static(process.env.PICS_UPLOADS_PATH || 'uploads'));
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/battle', routes.Battle);
+// app.use('/battle', routes.Battle);
 app.use('/group', routes.Group);
-app.use('/status', routes.Status);
-app.use('/user', routes.User);
+// app.use('/status', routes.Status);
+// app.use('/user', routes.User);
 
 if (reactBuild) {
   const reactBuildPath = reactBuild.startsWith('/') ? reactBuild : path.resolve(__dirname, reactBuild);
