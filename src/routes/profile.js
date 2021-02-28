@@ -2,8 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 
 const { jwtSecret } = require('../../config');
-const checkToken = require('../helper/checkToken');
-const connection = require('../helper/db');
+const checkToken = require('../helpers/checkToken');
+const connection = require('../helpers/db');
 
 const router = express.Router();
 

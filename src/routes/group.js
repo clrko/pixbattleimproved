@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const checkToken = require('../helper/checkToken');
-const connection = require('../helper/db');
-const eventEmitterMail = require('../helper/eventEmitterMail');
-const { encrypt } = require('../helper/encryptionCode');
+const checkToken = require('../helpers/checkToken');
+const connection = require('../helpers/db');
+const eventEmitterMail = require('../helpers/eventEmitterMail');
+const { encrypt } = require('../helpers/encryptionCode');
 
 router.delete('/:groupId', checkToken, (req, res, next) => {
   const sql = 'DELETE FROM `group` WHERE group_id = ?';
@@ -48,7 +48,7 @@ router.put('/update/:groupId', checkToken, (req, res, next) => {
 });
 
 // Add group participants
-router.post('/add-members/:groupId', checkToken, (req, res, next) => {
+router.post('/add-members/:groupId', checkToken, (req, res) => {
   const emails = req.body.allEmails;
   const userName = req.user.username;
   const groupId = req.params.groupId;

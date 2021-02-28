@@ -1,7 +1,7 @@
 const express = require('express');
 
-const connection = require('../helper/db');
-const checkToken = require('../helper/checkToken');
+const connection = require('../helpers/db');
+const checkToken = require('../helpers/checkToken');
 
 const router = express.Router();
 

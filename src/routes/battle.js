@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const checkToken = require('../helper/checkToken');
-const connection = require('../helper/db');
-const eventEmitterMail = require('../helper/eventEmitterMail');
+const checkToken = require('../helpers/checkToken');
+const connection = require('../helpers/db');
+const eventEmitterMail = require('../helpers/eventEmitterMail');
 const multer = require('multer');
 const {
   scheduleStatusUpdatePostToVote,
   scheduleStatusUpdateVoteToCompleted,
-} = require('../helper/updateBattleStatusJobs');
+} = require('../helpers/updateBattleStatusJobs');
 
 // Battle Creation
 router.get('/battle-creation/themes', (req, res, next) => {

@@ -2,10 +2,10 @@ const bcrypt = require('bcrypt');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-const connection = require('../helper/db');
+const connection = require('../helpers/db');
 const { jwtSecret } = require('../../config');
-const eventEmitterMail = require('../helper/eventEmitterMail');
-const { decrypt } = require('../helper/encryptionCode');
+const eventEmitterMail = require('../helpers/eventEmitterMail');
+const { decrypt } = require('../helpers/encryptionCode');
 
 const router = express.Router();
 

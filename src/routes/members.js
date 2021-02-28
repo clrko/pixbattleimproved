@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const checkToken = require('../helper/checkToken');
-const connection = require('../helper/db');
+const checkToken = require('../helpers/checkToken');
+const connection = require('../helpers/db');
 
 router.get('/group/:groupId', checkToken, (req, res, next) => {
   const sqlGetListMembers = `SELECT u.user_id, u.username, u.email, a.avatar_url
