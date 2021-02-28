@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { user } = require('../controllers/profile');
+const user = require('../controllers/user');
 
 const checkToken = require('../helpers/checkToken');
 

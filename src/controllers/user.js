@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { jwtSecret } = require('../../config');
 
 const { decrypt } = require('../helpers/encryptionCode');
-const { sendWelcomeMail } = require('../helpers/sendInvitationMail');
+const { sendWelcomeMail } = require('../helpers/sendEventMail');
 
 const {
   checkIfEmailExist,
